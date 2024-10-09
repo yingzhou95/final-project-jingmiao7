@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "My Final Project Template",
+    "section": "",
+    "text": "[~ 200 words]\nClearly stated background and questions / hypotheses / problems being addressed. Sets up the analysis in an interesting and compelling way. Include figures if you like."
+  },
+  {
+    "objectID": "index.html#download-and-clean-all-required-data",
+    "href": "index.html#download-and-clean-all-required-data",
+    "title": "My Final Project Template",
+    "section": "Download and clean all required data",
+    "text": "Download and clean all required data\n\nn=20\ndata=data.frame(x=runif(n,-180,180),\n                y=runif(n,-60,60),\n                size = runif(n, 5, 20),\n                category = factor(\n                  sample(letters[1:5], n, replace = TRUE)\n                  ),\n                value = rnorm(n))\n\ndata %&gt;% \n  slice(1:10) %&gt;% #show only 1:n rows\n  kable(digits=2,align=\"c\")%&gt;% #make table and round to two digits\n  kable_styling(bootstrap_options = \n                  c(\"striped\", \"hover\", \"condensed\", \"responsive\")) #apply other formatting\n\n\n\n\nx\ny\nsize\ncategory\nvalue\n\n\n\n\n126.61\n37.73\n18.73\na\n-0.11\n\n\n71.39\n-56.85\n13.65\nc\n-0.67\n\n\n-107.34\n0.55\n13.41\na\n0.66\n\n\n63.59\n-24.28\n7.33\nb\n-0.22\n\n\n-140.13\n-29.98\n5.84\nc\n-0.50\n\n\n-115.78\n21.71\n7.82\na\n-1.27\n\n\n108.10\n-46.71\n17.72\nc\n0.88\n\n\n103.74\n-31.92\n7.43\ne\n-1.54\n\n\n50.47\n59.80\n9.48\nc\n-1.38\n\n\n-1.72\n-59.76\n12.19\na\n1.65\n\n\n\n\n\n\nAdd any additional processing steps here."
+  },
+  {
+    "objectID": "data/Readme.html",
+    "href": "data/Readme.html",
+    "title": "GEO511_FinalProject",
+    "section": "",
+    "text": "Place any data needed by your analysis in this folder. Please do not store large files here. Then read in any data using the ‘data’ path. For example, read_csv(\"data/data.csv\")."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site\n\n1 + 1\n\n[1] 2"
+  }
+]
