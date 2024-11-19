@@ -1,6 +1,6 @@
 ---
 title: "My Final Project Template"
-author: Your name here
+author: Jing Miao
 subtitle: Subtitle here if desired
 date: today
 date-format: long
