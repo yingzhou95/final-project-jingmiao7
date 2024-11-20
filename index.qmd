@@ -1,5 +1,5 @@
 ---
-title: "My Final Project Template"
+title: "Phenology of mangroves"
 author: Jing Miao
 subtitle: Subtitle here if desired
 date: today
