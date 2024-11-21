@@ -10,7 +10,7 @@ date-format: long
 
 \[\~ 200 words\]
 
-Clearly stated background and questions / hypotheses / problems being addressed. Sets up the analysis in an interesting and compelling way. Include figures if you like.
+Heat and cold-related threats are forms of structural violence that intersect with housing, energy, and various social determinants of health.
 
 # Materials and methods
 
