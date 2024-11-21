@@ -2,16 +2,16 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "My Final Project Template",
+    "title": "Potential land plots for new Warming shelters in Buffalo, NY",
     "section": "",
-    "text": "[~ 200 words]\nClearly stated background and questions / hypotheses / problems being addressed. Sets up the analysis in an interesting and compelling way. Include figures if you like."
+    "text": "[~ 200 words]\nHeat and cold-related threats are forms of structural violence that intersect with housing, energy, and various social determinants of health."
   },
   {
     "objectID": "index.html#download-and-clean-all-required-data",
     "href": "index.html#download-and-clean-all-required-data",
-    "title": "My Final Project Template",
+    "title": "Potential land plots for new Warming shelters in Buffalo, NY",
     "section": "Download and clean all required data",
-    "text": "Download and clean all required data\n\nn=20\ndata=data.frame(x=runif(n,-180,180),\n                y=runif(n,-60,60),\n                size = runif(n, 5, 20),\n                category = factor(\n                  sample(letters[1:5], n, replace = TRUE)\n                  ),\n                value = rnorm(n))\n\ndata %&gt;% \n  slice(1:10) %&gt;% #show only 1:n rows\n  kable(digits=2,align=\"c\")%&gt;% #make table and round to two digits\n  kable_styling(bootstrap_options = \n                  c(\"striped\", \"hover\", \"condensed\", \"responsive\")) #apply other formatting\n\n\n\n\nx\ny\nsize\ncategory\nvalue\n\n\n\n\n-89.73\n37.87\n8.29\nc\n-0.65\n\n\n-146.54\n14.03\n11.77\nd\n0.11\n\n\n1.52\n0.25\n18.28\nd\n0.59\n\n\n31.04\n-50.49\n6.66\ne\n1.80\n\n\n-160.65\n-10.45\n7.97\ne\n-0.63\n\n\n92.78\n-4.25\n18.36\nc\n-0.02\n\n\n-93.41\n20.84\n17.67\nc\n0.35\n\n\n91.34\n-28.85\n9.89\nd\n-0.83\n\n\n-164.69\n38.65\n10.78\nc\n0.29\n\n\n128.21\n-6.70\n14.86\nd\n0.64\n\n\n\n\n\n\nAdd any additional processing steps here."
+    "text": "Download and clean all required data\n\nn=20\ndata=data.frame(x=runif(n,-180,180),\n                y=runif(n,-60,60),\n                size = runif(n, 5, 20),\n                category = factor(\n                  sample(letters[1:5], n, replace = TRUE)\n                  ),\n                value = rnorm(n))\n\ndata %&gt;% \n  slice(1:10) %&gt;% #show only 1:n rows\n  kable(digits=2,align=\"c\")%&gt;% #make table and round to two digits\n  kable_styling(bootstrap_options = \n                  c(\"striped\", \"hover\", \"condensed\", \"responsive\")) #apply other formatting\n\n\n\n\nx\ny\nsize\ncategory\nvalue\n\n\n\n\n-111.89\n37.98\n11.95\nb\n-1.41\n\n\n104.92\n13.34\n11.39\nb\n-1.29\n\n\n130.06\n-2.52\n16.57\nd\n-1.21\n\n\n13.30\n37.57\n19.36\nd\n-0.68\n\n\n-98.33\n38.99\n9.19\nb\n-0.95\n\n\n-106.33\n46.75\n13.56\nb\n-0.66\n\n\n-135.55\n35.68\n5.44\nd\n0.86\n\n\n-106.61\n16.34\n8.15\nb\n-0.67\n\n\n-53.62\n26.15\n13.51\nb\n-0.10\n\n\n140.26\n19.45\n7.92\nd\n-0.65\n\n\n\n\n\n\nAdd any additional processing steps here."
   },
   {
     "objectID": "data/Readme.html",
@@ -25,6 +25,6 @@
     "href": "about.html",
     "title": "About",
     "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
+    "text": "About this site\n\n# 1 + 1 I don't need this page"
   }
 ]
