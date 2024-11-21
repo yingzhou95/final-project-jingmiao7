@@ -1,7 +1,7 @@
 ---
-title: "Phenology of mangroves"
+title: "Potential land plots for new Warming shelters in Buffalo, NY"
 author: Jing Miao
-subtitle: Subtitle here if desired
+subtitle: "GEO 511 Final Project"
 date: today
 date-format: long
 ---
