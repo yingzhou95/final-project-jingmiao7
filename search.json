@@ -2,21 +2,21 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Potential land plots for new Warming shelters in Buffalo, NY",
+    "title": "Phenology of Mangroves",
     "section": "",
-    "text": "[~ 200 words]\nHeat and cold-related threats are forms of structural violence that intersect with housing, energy, and various social determinants of health."
+    "text": "Mangrove forests are salt-tolerant trees and shrubs that thrive in intertidal zones of tropical and subtropical regions. These ecosystems are highly valued as blue carbon reservoirs and natural coastal protection systems. Within mangrove ecosystems, different species display significant diversity in tree structures, growth strategies, and environmental adaptations. While mangroves are evergreen, remote sensing observations reveal that distinct species exhibit varying temporal patterns in the onset, persistence, and greenness of their growth stages. This study aims to characterize the phenological patterns of three mangrove species: red mangrove (Rhizophora mangle), white mangrove (Avicennia germinans), and black mangrove (Laguncularia racemosa) in Everglades National Park, Florida. To be more specific, high-temporal-resolution remote sensing data from the Harmonized Landsat and Sentinel (HLS) dataset for 2023 will be used to extract Normalized Difference Vegetation Index (NDVI) values, enabling a detailed analysis of the phenological differences among these dominant species. test"
   },
   {
     "objectID": "index.html#download-and-clean-all-required-data",
     "href": "index.html#download-and-clean-all-required-data",
-    "title": "Potential land plots for new Warming shelters in Buffalo, NY",
+    "title": "Phenology of Mangroves",
     "section": "Download and clean all required data",
-    "text": "Download and clean all required data\n\nn=20\ndata=data.frame(x=runif(n,-180,180),\n                y=runif(n,-60,60),\n                size = runif(n, 5, 20),\n                category = factor(\n                  sample(letters[1:5], n, replace = TRUE)\n                  ),\n                value = rnorm(n))\n\ndata %&gt;% \n  slice(1:10) %&gt;% #show only 1:n rows\n  kable(digits=2,align=\"c\")%&gt;% #make table and round to two digits\n  kable_styling(bootstrap_options = \n                  c(\"striped\", \"hover\", \"condensed\", \"responsive\")) #apply other formatting\n\n\n\n\nx\ny\nsize\ncategory\nvalue\n\n\n\n\n-111.89\n37.98\n11.95\nb\n-1.41\n\n\n104.92\n13.34\n11.39\nb\n-1.29\n\n\n130.06\n-2.52\n16.57\nd\n-1.21\n\n\n13.30\n37.57\n19.36\nd\n-0.68\n\n\n-98.33\n38.99\n9.19\nb\n-0.95\n\n\n-106.33\n46.75\n13.56\nb\n-0.66\n\n\n-135.55\n35.68\n5.44\nd\n0.86\n\n\n-106.61\n16.34\n8.15\nb\n-0.67\n\n\n-53.62\n26.15\n13.51\nb\n-0.10\n\n\n140.26\n19.45\n7.92\nd\n-0.65\n\n\n\n\n\n\nAdd any additional processing steps here."
+    "text": "Download and clean all required data\n\nTemperature data\nAdd any additional processing steps here."
   },
   {
     "objectID": "data/Readme.html",
     "href": "data/Readme.html",
-    "title": "GEO511_FinalProject",
+    "title": "GEO511 Final Project",
     "section": "",
     "text": "Place any data needed by your analysis in this folder. Please do not store large files here. Then read in any data using the ‘data’ path. For example, read_csv(\"data/data.csv\")."
   },
