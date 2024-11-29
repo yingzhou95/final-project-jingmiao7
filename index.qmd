@@ -17,7 +17,7 @@ output:
 # Introduction
 
 **Mangrove forests** are salt-tolerant trees and shrubs that thrive in intertidal zones of tropical and subtropical regions. These ecosystems are highly valued as blue carbon reservoirs and natural coastal protection systems. Within mangrove ecosystems, different species display significant diversity in tree structures, growth strategies, and environmental adaptations. While mangroves are evergreen, remote sensing observations reveal that distinct species exhibit varying temporal patterns in the onset, persistence, and greenness of their growth stages.<br> This study aims to characterize the phenological patterns of three mangrove species: **red mangrove** (*Rhizophora mangle*), **white mangrove** (*Avicennia germinans*), and **black mangrove** (*Laguncularia racemosa*) in Everglades National Park, Florida. To be more specific, high-temporal-resolution remote sensing data from the Harmonized Landsat and Sentinel (HLS) dataset for 2023 will be used to extract Normalized Difference Vegetation Index (NDVI) values, enabling a detailed analysis of the phenological differences among these dominant species.<br>
-
+test
 ![**Figure 1.** Three Dominant mangrove species in South Florida and their zonation.](/data/dominant-mangrove-species-of-south-florida.png)
 
 # Materials and methods
