@@ -2,7 +2,7 @@ project:
   type: website
 
 website:
-  title: "GEO511_FinalProject"
+  title: "GEO511 Final Project"
   navbar:
     left:
       - href: index.qmd
@@ -11,6 +11,6 @@ website:
 
 format:
   html:
-    theme: cosmo
+    theme: minty
     includes:
         after_body: include/after_body.html

@@ -1,80 +1,78 @@
 ---
-title: "Potential land plots for new Warming shelters in Buffalo, NY"
+title: "Phenology of Mangroves"
 author: Jing Miao
-subtitle: "GEO 511 Final Project"
+subtitle: "Fall 2024 GEO 511 Final Project"
 date: today
 date-format: long
+#bibliography: references.bib
+output:
+  html_document:
+    mathjax: true
+    toc: true
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
 ---
 
 # Introduction
 
-\[\~ 200 words\]
+**Mangrove forests** are salt-tolerant trees and shrubs that thrive in intertidal zones of tropical and subtropical regions. These ecosystems are highly valued as blue carbon reservoirs and natural coastal protection systems. Within mangrove ecosystems, different species display significant diversity in tree structures, growth strategies, and environmental adaptations. While mangroves are evergreen, remote sensing observations reveal that distinct species exhibit varying temporal patterns in the onset, persistence, and greenness of their growth stages.<br> This study aims to characterize the phenological patterns of three mangrove species: **red mangrove** (*Rhizophora mangle*), **white mangrove** (*Avicennia germinans*), and **black mangrove** (*Laguncularia racemosa*) in Everglades National Park, Florida. To be more specific, high-temporal-resolution remote sensing data from the Harmonized Landsat and Sentinel (HLS) dataset for 2023 will be used to extract Normalized Difference Vegetation Index (NDVI) values, enabling a detailed analysis of the phenological differences among these dominant species.<br>
 
-Heat and cold-related threats are forms of structural violence that intersect with housing, energy, and various social determinants of health.
+![**Figure 1.** Three Dominant mangrove species in South Florida and their zonation.](/data/dominant-mangrove-species-of-south-florida.png)
 
 # Materials and methods
 
-\[\~ 200 words\]
+To extract phenological information of three mangrove species from remote sensing-based observation, we need:
 
-Narrative: Clear narrative description of the data sources and methods. Includes data from at least two sources that were integrated / merged in R.
+-   **Datasets**
+1.  **Harmonized Landsat and Sentinel (HLS) dataset**<br> The HLS product integrates data from the Landsat 8 (or Landsat 9) and Sentinel-2A (or Sentinel-2B) satellites, producing a harmonized surface reflectance dataset with a 30-meter spatial resolution. Moreover, HLS includes a Quality Assurance (QA) band, which provides data quality filters and masks for clouds, cloud shadows, and water bodies. **To generate time series NDVI from HLS dataset, red and near inf-red bands are collected.**
 
-Code: The code associated with the project is well organized and easy to follow. Demonstrates mastery of R graphics and functions.
+2.  **Geographical location of mangrove samples**<br> The geographical information of three mangrove species are collected from Project: The Vegetation of Everglades National Park: Final Report (Spatial Data). This project provides the vegetation map of everglades national park based on aerial photos and field samples as shown in Figure 2. **10 samples of each three mangrove species (red mangrove, white mangrove, and black mangrove) are extracted from this final report.**
+-  **Methods**
+1.  **Normalized Difference Vegetation Index**<br>
+NDVI is widely used to monitor vegetation health and phenological changes over time. The formula is:<br>
+<div style="text-align: center;">
+$$
+\text{NDVI} = \frac{(NIR - RED)}{(NIR + RED)}
+$$
+</div><br>
+2.  **Harmonic Regression**<br>
+Harmonic regression is a statistical technique that fits sine and cosine functions to data and is adept at identifying and modeling the cyclical variations inherent in time series with periodic patterns.<br>
+<div style="text-align: center;">
+$$
+y_t = \beta_0 + \sum_{k=1}^{K} \left( \beta_{k} \cos\left(\frac{2\pi k t}{T}\right) + \gamma_{k} \sin\left(\frac{2\pi k t}{T}\right) \right) + \epsilon_t
+$$
+</div><br>
+Where:
 
-Data: The underlying data are publicly accessible via the web and downloaded/accessed within the Rmd script. If you want to use your own data, you must make it available on a website (e.g. Figshare) so that others are able to re-run your code.
-
-You can do bullets like this:
-
--   The first most important thing
--   The second most important thing
--   The third most important thing
-
-You can do numbers like this:
-
-1.  The first most important thing
-2.  The second most important thing
-3.  The third most important thing
-
-See <http://rmarkdown.rstudio.com/> for all the amazing things you can do.
-
-Here's my first code chunk.
-
-```{r}
-x=3+4
-```
-
-Refer to output in your narrative like this: x=`r x` .
+- $y_t$: The observed value at time $t$.
+- $\beta_0$: The intercept or constant term in the model.
+- $\beta_k$: The coefficient for the cosine term corresponding to the $k$-th harmonic.
+- $\gamma_k$: The coefficient for the sine term corresponding to the $k$-th harmonic.
+- $T$: The period of the data (e.g., the number of days in a year if the data is annual).
+- $t$: The time point or index (often representing the day of the year, etc.).
+- $K$: The total number of harmonics (sinusoidal terms) included in the model, usually based on the periodicity of the data.
+- $\epsilon_t$: The error term at time $t$, capturing the residual variability in the data that is not explained by the harmonic components.
 
 Load any required packages in a code chunk (you may need to install some packages):
 
 ```{r, message=F, warning=F}
-library(tidyverse)
-library(leaflet)
-library(kableExtra)
-library(htmlwidgets)
-library(widgetframe)
-knitr::opts_chunk$set(widgetframe_widgets_dir = 'widgets' ) 
-knitr::opts_chunk$set(cache=TRUE)  # cache the results for quick compiling
+library(geodata)
+library(terra)
+library(ncdf4)
+library(ggplot2)
 ```
 
 ## Download and clean all required data
 
+### Temperature data
+
 ```{r}
-n=20
-data=data.frame(x=runif(n,-180,180),
-                y=runif(n,-60,60),
-                size = runif(n, 5, 20),
-                category = factor(
-                  sample(letters[1:5], n, replace = TRUE)
-                  ),
-                value = rnorm(n))
+
 ```
 
 ```{r, results='asis'}
-data %>% 
-  slice(1:10) %>% #show only 1:n rows
-  kable(digits=2,align="c")%>% #make table and round to two digits
-  kable_styling(bootstrap_options = 
-                  c("striped", "hover", "condensed", "responsive")) #apply other formatting
+
 ```
 
 Add any additional processing steps here.
@@ -88,25 +86,17 @@ Tables and figures (maps and other graphics) are carefully planned to convey the
 Show tables, plots, etc. and describe them.
 
 ```{r, fig.width=6, fig.height=3, fig.cap="Map of completely random data"}
-m <- leaflet(data) %>% 
-  addTiles() %>% 
-  addCircleMarkers(~x, ~y, radius = ~size,color = ~as.factor(category)) %>% 
-  addPopups(~x[2], ~y[2], "Random popup")
-m  # a map with the default OSM tile layer
+
 ```
 
 ```{r}
-data %>% 
-  ggplot(aes(x=x,y=y,col=category))+
-  geom_point()
+
 ```
 
 ### Dygraphs Example
 
 ```{r}
-library(dygraphs)
-dygraph(nhtemp, main = "New Haven Temperatures") |> 
-  dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01")) 
+
 ```
 
 # Conclusions
