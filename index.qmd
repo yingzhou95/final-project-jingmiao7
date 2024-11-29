@@ -57,10 +57,8 @@ Where:
 Load any required packages in a code chunk (you may need to install some packages):
 
 ```{r, message=F, warning=F}
-#library(geodata)
-#library(terra)
-#library(ncdf4)
-#library(ggplot2)
+library(terra)
+library(ggplot2)
 ```
 
 ## Download and clean all required data
