@@ -54,19 +54,53 @@ Where:
 - $K$: The total number of harmonics (sinusoidal terms) included in the model, usually based on the periodicity of the data.
 - $\epsilon_t$: The error term at time $t$, capturing the residual variability in the data that is not explained by the harmonic components.
 
-Load any required packages in a code chunk (you may need to install some packages):
+## Download and clean all required data
+
+### Install and load necessary packages
 
 ```{r, message=F, warning=F}
 library(terra)
 library(ggplot2)
+library(sf)
+library(leaflet)
+library(RColorBrewer)
 ```
 
-## Download and clean all required data
-
-### Temperature data
+### Three mangrove species samples
 
 ```{r}
+#read shapefiles of three mangrove species in Florida
+black_mangrove <- st_read("data/SpeciesSamples/BM_Samples.shp")
+white_mangrove <- st_read("data/SpeciesSamples/WM_Samples.shp")
+red_mangrove <- st_read("data/SpeciesSamples/RM_Samples.shp")
 
+crs_target <- st_crs(4326) # WGS 84
+black_mangrove <- st_transform(black_mangrove, crs_target)
+white_mangrove <- st_transform(white_mangrove, crs_target)
+red_mangrove <- st_transform(red_mangrove, crs_target)
+
+colors <- c("Black Mangrove" = "black", 
+            "White Mangrove" = "white", 
+            "Red Mangrove" = "red")
+
+leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(data = black_mangrove, 
+                   color = "black", 
+                   radius = 5, 
+                   popup = ~paste("Black Mangrove<br>", as.character(geometry))) %>%
+  addCircleMarkers(data = white_mangrove, 
+                   color = "white", 
+                   radius = 5, 
+                   popup = ~paste("White Mangrove<br>", as.character(geometry))) %>%
+  addCircleMarkers(data = red_mangrove, 
+                   color = "red", 
+                   radius = 5, 
+                   popup = ~paste("Red Mangrove<br>", as.character(geometry))) %>%
+  addLegend("bottomright", 
+            colors = colors, 
+            labels = names(colors), 
+            title = "Mangrove Samples")
 ```
 
 ```{r, results='asis'}
