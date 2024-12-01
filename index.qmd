@@ -57,28 +57,38 @@ Where:
 ## Download and clean all required data
 
 ### Install and load necessary packages
-
+This study needs packages related to image processing, such as: terra, sf, and googledrive; moreover, packages related to result presentation are required, including ggplot2, leaflet, dplyr, and RColorBrewer.
 ```{r, message=F, warning=F}
 library(terra)
 library(ggplot2)
 library(sf)
 library(leaflet)
 library(RColorBrewer)
+library(googledrive)
+library(dplyr)
 ```
 
 ### Three mangrove species samples
-
-```{r}
+The distribution of three mangrove species samples in our study area is as shwon in the following:
+```{r, echo=F, message=F, warning=F, results='hide'}
 #read shapefiles of three mangrove species in Florida
 black_mangrove <- st_read("data/SpeciesSamples/BM_Samples.shp")
 white_mangrove <- st_read("data/SpeciesSamples/WM_Samples.shp")
 red_mangrove <- st_read("data/SpeciesSamples/RM_Samples.shp")
 
+mangrove_points <- rbind(
+  mutate(red_mangrove, species = "Red"),
+  mutate(black_mangrove, species = "Black"),
+  mutate(white_mangrove, species = "White")
+)
+
 crs_target <- st_crs(4326) # WGS 84
 black_mangrove <- st_transform(black_mangrove, crs_target)
 white_mangrove <- st_transform(white_mangrove, crs_target)
 red_mangrove <- st_transform(red_mangrove, crs_target)
+```
 
+```{r}
 colors <- c("Black Mangrove" = "black", 
             "White Mangrove" = "white", 
             "Red Mangrove" = "red")
@@ -103,11 +113,271 @@ leaflet() %>%
             title = "Mangrove Samples")
 ```
 
-```{r, results='asis'}
+The downloaded HLS images are uploaded to Google Drive, we can access this data folder through ID. Then, we will collect band 4 and band5 from the dataset.
+```{r, eval=F}
+# drive_auth() for first time to link Google Drive from R, we should do this authentication
+HLSImages_Folder_ID <- "1Yf0eElhTCvqnYGUwl8KD6p8yAFZhd5-m"
+HLS_Everglades <- drive_ls(as_id(HLSImages_Folder_ID))
+HLS_band4 <- HLS_Everglades %>% filter(grepl("_B04_", name))
+HLS_band5 <- HLS_Everglades %>% filter(grepl("_B05_", name))
+
+# extract DOY from HLS_band4$name
+extract_doy <- function(names_column) {
+  doy_values <- gsub(".*_doy(\\d{7}).*", "\\1", names_column)
+  return(as.numeric(doy_values)) # convert it to numeric
+}
+
+# Add it to DOY column in HLS_band4 and HLS_band5
+HLS_band4$DOY <- extract_doy(HLS_band4$name)
+HLS_band5$DOY <- extract_doy(HLS_band5$name)
+
+# initial the results file (extracted band 4 and band 5 values) as a list
+HLS_band4$download_link <- sapply(HLS_band4$drive_resource, function(x) x$webContentLink)
+HLS_band5$download_link <- sapply(HLS_band5$drive_resource, function(x) x$webContentLink)
+
+band4_rasters <- lapply(HLS_band4$download_link, function(link) rast(link))
+band5_rasters <- lapply(HLS_band5$download_link, function(link) rast(link))
 
 ```
+Extract time-series band reflectance values from dataset.
+```{r, eval=F}
+# Function to extract the 'id' part from a given string (raster name or download link)
+extract_id <- function(name) {
+  # Use regular expressions to extract the 'id' parameter value
+  sub(".*[?&]id=([a-zA-Z0-9_-]+).*", "\\1", name)
+}
 
-Add any additional processing steps here.
+# Step 1: Create a mapping of 'id' -> DOY from HLS_band5
+HLS_band5$id <- sapply(HLS_band5$download_link, extract_id)
+link_to_doy <- setNames(HLS_band5$DOY, HLS_band5$id) # Create mapping: id -> DOY
+
+# Step 2: Check CRS of the sample points and rasters
+print("Checking coordinate systems...")
+sample_crs <- st_crs(black_mangrove) # CRS of black mangrove points
+raster_crs <- crs(band5_rasters[[1]]) # CRS of the first raster (assumed consistent across rasters)
+print(paste("Sample CRS:", sample_crs$input))
+print(paste("Raster CRS:", raster_crs))
+
+# If CRS is different, reproject the sample points to match the raster CRS
+if (sample_crs$input != raster_crs) {
+  print("CRS mismatch detected. Reprojecting sample points to match raster CRS...")
+  black_mangrove <- st_transform(black_mangrove, raster_crs)
+  print("Reprojection completed.")
+}
+
+# Initialize results table with DOY and placeholders
+extracted_band5_RM <- data.frame(DOY = HLS_band5$DOY)
+for (j in seq_len(nrow(red_mangrove))) {
+  extracted_band5_RM[, paste0("Red_", j)] <- NA
+}
+
+# Iterate through rasters
+for (i in seq_along(band5_rasters)) {
+  raster_name <- names(band5_rasters[[i]])
+  raster_id <- extract_id(raster_name)
+  doy <- link_to_doy[raster_id]
+  
+  if (is.na(doy)) {
+    stop(paste("Raster ID", raster_id, "could not be matched with any DOY."))
+  }
+
+  band5_extract <- terra::extract(band5_rasters[[i]], red_mangrove, method = "simple")
+  
+  if (nrow(band5_extract) != nrow(red_mangrove)) {
+    stop("Mismatch between extracted values and number of sample points.")
+  }
+  
+  row_index <- which(extracted_band5_RM$DOY == doy)
+  if (length(row_index) == 0) {
+    stop(paste("DOY", doy, "not found in results table."))
+  }
+  
+  # Add extracted values to the correct row
+  extracted_band5_RM[row_index, paste0("Red_", seq_len(nrow(red_mangrove)))] <- t(as.matrix(band5_extract[, 2]))
+  print(paste("Added values for DOY", doy, ":", band5_extract[, 2]))
+}
+
+# Save the results
+write.csv(extracted_band5_BM, "data/extracted_band5_BM.csv", row.names = FALSE)
+```
+
+```{r, eval=F}
+# Function to compute NDVI from Band 4 and Band 5 datasets
+compute_ndvi <- function(band4_file, band5_file, output_file) {
+  # Step 1: Read Band 4 and Band 5 CSV files
+  cat("Reading Band 4 data from:", band4_file, "\n")
+  band4_data <- read.csv(band4_file)
+  cat("Reading Band 5 data from:", band5_file, "\n")
+  band5_data <- read.csv(band5_file)
+  
+  # Step 2: Preprocess DOY columns
+  cat("Preprocessing DOY columns...\n")
+  band4_data$DOY <- as.numeric(trimws(band4_data$DOY))
+  band5_data$DOY <- as.numeric(trimws(band5_data$DOY))
+  
+  # Remove duplicates if present
+  if (any(duplicated(band4_data$DOY))) {
+    cat("Removing duplicate DOY values in Band 4...\n")
+    band4_data <- band4_data[!duplicated(band4_data$DOY), ]
+  }
+  if (any(duplicated(band5_data$DOY))) {
+    cat("Removing duplicate DOY values in Band 5...\n")
+    band5_data <- band5_data[!duplicated(band5_data$DOY), ]
+  }
+  
+  # Step 3: Identify common DOY
+  cat("Identifying common DOY values...\n")
+  common_doy <- intersect(band4_data$DOY, band5_data$DOY)
+  if (length(common_doy) == 0) {
+    stop("No matching DOY values found between Band 4 and Band 5 datasets.")
+  }
+  cat("Number of matching DOY values:", length(common_doy), "\n")
+  
+  # Filter data to retain only matching DOY
+  band4_data <- band4_data[band4_data$DOY %in% common_doy, ]
+  band5_data <- band5_data[band5_data$DOY %in% common_doy, ]
+  
+  # Sort datasets by DOY
+  band4_data <- band4_data[order(band4_data$DOY), ]
+  band5_data <- band5_data[order(band5_data$DOY), ]
+  
+  # Step 4: Check alignment of DOY columns
+  cat("Checking DOY alignment...\n")
+  if (!all(band4_data$DOY == band5_data$DOY)) {
+    mismatches <- which(band4_data$DOY != band5_data$DOY)
+    cat("Mismatched DOY rows detected:\n")
+    print(band4_data$DOY[mismatches])
+    print(band5_data$DOY[mismatches])
+    stop("DOY columns still not aligned after sorting.")
+  }
+  cat("DOY columns are aligned.\n")
+  
+  # Step 5: Initialize NDVI results
+  cat("Initializing NDVI results...\n")
+  ndvi_results <- data.frame(DOY = band4_data$DOY)
+  
+  # Step 6: Compute NDVI for each sample point
+  cat("Computing NDVI for sample points...\n")
+  for (col in 2:ncol(band4_data)) {  # Skip the DOY column
+    band4_col <- band4_data[, col]
+    band5_col <- band5_data[, col]
+    
+    # Calculate NDVI
+    ndvi_results[, col] <- (band5_col - band4_col) / (band5_col + band4_col)
+  }
+  
+  # Step 7: Add column names to NDVI results
+  colnames(ndvi_results) <- colnames(band4_data)
+  
+  # Step 8: Save NDVI results to CSV
+  cat("Saving NDVI results to:", output_file, "\n")
+  write.csv(ndvi_results, output_file, row.names = FALSE)
+  cat("NDVI computation completed successfully.\n")
+}
+
+compute_ndvi("data/extracted_band4_BM.csv", "data/extracted_band5_BM.csv", "data/ndvi_BM.csv")
+compute_ndvi("data/extracted_band4_RM.csv", "data/extracted_band5_RM.csv", "data/ndvi_RM.csv")
+compute_ndvi("data/extracted_band4_WM.csv", "data/extracted_band5_WM.csv", "data/ndvi_WM.csv")
+```
+
+```{r}
+# Step 1: Read NDVI data for the three species
+BM_ndvi <- read.csv("data/ndvi_BM.csv")
+WM_ndvi <- read.csv("data/ndvi_WM.csv")
+RM_ndvi <- read.csv("data/ndvi_RM.csv")
+
+# Step 2: Calculate average NDVI for each species
+Avg_BM_ndvi <- rowMeans(BM_ndvi[, -1], na.rm = TRUE)  # Exclude DOY column
+Avg_WM_ndvi <- rowMeans(WM_ndvi[, -1], na.rm = TRUE)
+Avg_RM_ndvi <- rowMeans(RM_ndvi[, -1], na.rm = TRUE)
+
+# Step 3: Combine data into a single dataframe for plotting
+avg_ndvi_data <- data.frame(
+  Species = rep(c("Black Mangrove", "White Mangrove", "Red Mangrove"), 
+                times = c(length(Avg_BM_ndvi), length(Avg_WM_ndvi), length(Avg_RM_ndvi))),
+  Average_NDVI = c(Avg_BM_ndvi, Avg_WM_ndvi, Avg_RM_ndvi)
+)
+
+# Step 4: Filter data to only include NDVI values between 0 and 1
+avg_ndvi_data <- avg_ndvi_data %>%
+  filter(Average_NDVI > 0 & Average_NDVI < 1)
+
+# Step 5: Calculate group sizes for variable box widths
+species_counts <- avg_ndvi_data %>%
+  group_by(Species) %>%
+  summarise(Count = n())
+
+# Step 6: Merge counts back into the main dataframe
+avg_ndvi_data <- avg_ndvi_data %>%
+  left_join(species_counts, by = "Species")
+
+```
+```{r}
+# Function to preprocess DOY to extract the day of year
+preprocess_doy <- function(doy_column) {
+  as.numeric(substr(doy_column, 5, 7))  # Extract last three digits
+}
+
+# Function to remove outliers based on 3x standard deviation
+remove_outliers <- function(data) {
+  mean_ndvi <- mean(data$Average_NDVI, na.rm = TRUE)
+  std_ndvi <- sd(data$Average_NDVI, na.rm = TRUE)
+  threshold_low <- mean_ndvi - 3 * std_ndvi
+  threshold_high <- mean_ndvi + 3 * std_ndvi
+  data %>%
+    filter(Average_NDVI >= threshold_low & Average_NDVI <= threshold_high)
+}
+
+# Function to fit harmonic regression and predict NDVI
+fit_harmonic_regression <- function(data, species_name) {
+  # Preprocess DOY and remove outliers
+  data <- data %>%
+    mutate(DOY = preprocess_doy(DOY)) %>%  # Preprocess DOY to extract day of year
+    filter(Average_NDVI > 0 & Average_NDVI < 1) %>%  # Filter valid NDVI values
+    remove_outliers()  # Remove outliers based on 3x std
+  
+  # Fit harmonic regression
+  model <- lm(Average_NDVI ~ cos(2 * pi * DOY / 365) + sin(2 * pi * DOY / 365), data = data)
+  
+  # Generate DOY sequence for predictions
+  doy_seq <- seq(1, 365, by = 1)
+  predictions <- predict(model, newdata = data.frame(
+    DOY = doy_seq
+  ))
+  
+  # Return observed data, fitted model, and predictions
+  list(
+    data = data,
+    model = model,
+    predictions = data.frame(DOY = doy_seq, Fitted_NDVI = predictions),
+    species = species_name
+  )
+}
+
+# Step 1: Load NDVI data for three species
+species1_ndvi <- read.csv("data/ndvi_BM.csv")
+species2_ndvi <- read.csv("data/ndvi_WM.csv")
+species3_ndvi <- read.csv("data/ndvi_RM.csv")
+
+# Step 2: Calculate average NDVI for each species
+species1_data <- data.frame(DOY = species1_ndvi$DOY, Average_NDVI = rowMeans(species1_ndvi[, -1], na.rm = TRUE))
+species2_data <- data.frame(DOY = species2_ndvi$DOY, Average_NDVI = rowMeans(species2_ndvi[, -1], na.rm = TRUE))
+species3_data <- data.frame(DOY = species3_ndvi$DOY, Average_NDVI = rowMeans(species3_ndvi[, -1], na.rm = TRUE))
+
+# Step 3: Fit harmonic regression for each species
+species1_fit <- fit_harmonic_regression(species1_data, "Black Mangrove")
+species2_fit <- fit_harmonic_regression(species2_data, "White Mangrove")
+species3_fit <- fit_harmonic_regression(species3_data, "Red Mangrove")
+
+# Step 4: Combine predictions for visualization
+all_predictions <- bind_rows(
+  species1_fit$predictions %>% mutate(Species = "Black Mangrove"),
+  species2_fit$predictions %>% mutate(Species = "White Mangrove"),
+  species3_fit$predictions %>% mutate(Species = "Red Mangrove")
+)
+
+
+```
 
 # Results
 
@@ -117,12 +387,48 @@ Tables and figures (maps and other graphics) are carefully planned to convey the
 
 Show tables, plots, etc. and describe them.
 
-```{r, fig.width=6, fig.height=3, fig.cap="Map of completely random data"}
-
+```{r}
+ggplot(avg_ndvi_data, aes(x = Species, y = Average_NDVI, fill = Species)) +
+  geom_violin(trim = TRUE, scale = "width") +  # Create violin plot
+  geom_boxplot(width = 0.1, outlier.size = 1, alpha = 0.5) +  # Add a boxplot inside the violin
+  scale_fill_manual(values = c("Black Mangrove" = "black", "White Mangrove" = "gray", "Red Mangrove" = "red")) +  # Custom colors
+  coord_cartesian(ylim = c(0, 1)) +  # Limit Y-axis to (0, 1)
+  labs(title = "Yearly Average NDVI for Three Species",
+       x = "Species",
+       y = "Average NDVI") +
+  theme_minimal() +
+  theme(legend.position = "none",
+            plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
-
+# Step 5: Plot observed data and fitted phenology curves
+ggplot() +
+  # Observed NDVI points
+  geom_point(data = species1_fit$data, aes(x = DOY, y = Average_NDVI, color = "Black Mangrove"), alpha = 0.6) +
+  geom_point(data = species2_fit$data, aes(x = DOY, y = Average_NDVI, color = "White Mangrove"), alpha = 0.6) +
+  geom_point(data = species3_fit$data, aes(x = DOY, y = Average_NDVI, color = "Red Mangrove"), alpha = 0.6) +
+  # Fitted harmonic regression curves
+  geom_line(data = all_predictions, aes(x = DOY, y = Fitted_NDVI, color = Species), size = 1) +
+  scale_color_manual(values = c(
+    "Black Mangrove" = "black",
+    "White Mangrove" = "gray",
+    "Red Mangrove" = "red"
+  )) +
+  labs(
+    title = "Harmonic Regression of NDVI Phenology",
+    x = "Day of Year (DOY)",
+    y = "NDVI",
+    color = "Species"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),  # Center-align title and adjust size
+    axis.title = element_text(size = 14),  # Adjust axis title size
+    axis.text = element_text(size = 12),  # Adjust axis text size
+    legend.title = element_text(size = 12),  # Adjust legend title size
+    legend.text = element_text(size = 10)  # Adjust legend text size
+  )
 ```
 
 ### Dygraphs Example
