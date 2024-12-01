@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Phenology of Mangroves",
     "section": "",
-    "text": "Introduction\n  Materials and methods\n  \n  Materials\n  \n  Harmonized Landsat and Sentinel (HLS) dataset\n  Geographical location of mangrove samples\n  Normalized Difference Vegetation Index\n  Harmonic Regression\n  \n  Methods\n  \n  Install and load necessary packages\n  Prepare three mangrove species samples\n  Extract phenology from time-series HLS\n  \n  \n  Results\n  \n  Average NDVI\n  Pheonogy demostration based on harmonic regression\n  \n  Conclusions\n  References"
+    "text": "Introduction\n  Materials and methods\n  \n  Materials\n  \n  Harmonized Landsat and Sentinel (HLS) dataset\n  Geographical location of mangrove samples\n  Normalized Difference Vegetation Index\n  Harmonic Regression\n  \n  Methods\n  \n  Install and load necessary packages\n  Prepare three mangrove species samples\n  Extract phenology from time-series HLS\n  \n  \n  Results\n  \n  Average NDVI\n  Pheonogy demostration based on harmonic regression\n  \n  Conclusion\n  References"
   },
   {
     "objectID": "index.html#materials",
