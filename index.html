@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jing Miao">
-<meta name="dcterms.date" content="2024-11-30">
+<meta name="dcterms.date" content="2024-12-01">
 
 <title>Phenology of Mangroves – GEO511 Final Project</title>
 <style>
@@ -205,7 +205,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 30, 2024</p>
+      <p class="date">December 1, 2024</p>
     </div>
   </div>
   
@@ -264,84 +264,307 @@ y_t = \beta_0 + \sum_{k=1}^{K} \left( \beta_{k} \cos\left(\frac{2\pi k t}{T}\rig
 <h2 class="anchored" data-anchor-id="download-and-clean-all-required-data">Download and clean all required data</h2>
 <section id="install-and-load-necessary-packages" class="level3">
 <h3 class="anchored" data-anchor-id="install-and-load-necessary-packages">Install and load necessary packages</h3>
+<p>This study needs packages related to image processing, such as: terra, sf, and googledrive; moreover, packages related to result presentation are required, including ggplot2, leaflet, dplyr, and RColorBrewer.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaflet)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(googledrive)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="three-mangrove-species-samples" class="level3">
 <h3 class="anchored" data-anchor-id="three-mangrove-species-samples">Three mangrove species samples</h3>
+<p>The distribution of three mangrove species samples in our study area is as shwon in the following:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#read shapefiles of three mangrove species in Florida</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>black_mangrove <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/SpeciesSamples/BM_Samples.shp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `BM_Samples' from data source 
-  `/home/runner/work/final-project-jingmiao7/final-project-jingmiao7/data/SpeciesSamples/BM_Samples.shp' 
-  using driver `ESRI Shapefile'
-Simple feature collection with 10 features and 1 field
-Geometry type: POINT
-Dimension:     XY
-Bounding box:  xmin: 466246 ymin: 2779986 xmax: 502432.2 ymax: 2854372
-Projected CRS: NAD83 / UTM zone 17N</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>white_mangrove <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/SpeciesSamples/WM_Samples.shp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `WM_Samples' from data source 
-  `/home/runner/work/final-project-jingmiao7/final-project-jingmiao7/data/SpeciesSamples/WM_Samples.shp' 
-  using driver `ESRI Shapefile'
-Simple feature collection with 10 features and 1 field
-Geometry type: POINT
-Dimension:     XY
-Bounding box:  xmin: 464094.6 ymin: 2783839 xmax: 499619.2 ymax: 2860301
-Projected CRS: NAD83 / UTM zone 17N</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>red_mangrove <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/SpeciesSamples/RM_Samples.shp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `RM_Samples' from data source 
-  `/home/runner/work/final-project-jingmiao7/final-project-jingmiao7/data/SpeciesSamples/RM_Samples.shp' 
-  using driver `ESRI Shapefile'
-Simple feature collection with 10 features and 1 field
-Geometry type: POINT
-Dimension:     XY
-Bounding box:  xmin: 463689.7 ymin: 2786536 xmax: 522674.7 ymax: 2849480
-Projected CRS: NAD83 / UTM zone 17N</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>crs_target <span class="ot">&lt;-</span> <span class="fu">st_crs</span>(<span class="dv">4326</span>) <span class="co"># WGS 84</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>black_mangrove <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(black_mangrove, crs_target)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>white_mangrove <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(white_mangrove, crs_target)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>red_mangrove <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(red_mangrove, crs_target)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Black Mangrove"</span> <span class="ot">=</span> <span class="st">"black"</span>, </span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>            <span class="st">"White Mangrove"</span> <span class="ot">=</span> <span class="st">"white"</span>, </span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Red Mangrove"</span> <span class="ot">=</span> <span class="st">"red"</span>)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(<span class="at">data =</span> black_mangrove, </span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                   <span class="at">color =</span> <span class="st">"black"</span>, </span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                   <span class="at">radius =</span> <span class="dv">5</span>, </span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                   <span class="at">popup =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">"Black Mangrove&lt;br&gt;"</span>, <span class="fu">as.character</span>(geometry))) <span class="sc">%&gt;%</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(<span class="at">data =</span> white_mangrove, </span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>                   <span class="at">color =</span> <span class="st">"white"</span>, </span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>                   <span class="at">radius =</span> <span class="dv">5</span>, </span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>                   <span class="at">popup =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">"White Mangrove&lt;br&gt;"</span>, <span class="fu">as.character</span>(geometry))) <span class="sc">%&gt;%</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(<span class="at">data =</span> red_mangrove, </span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>                   <span class="at">color =</span> <span class="st">"red"</span>, </span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                   <span class="at">radius =</span> <span class="dv">5</span>, </span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>                   <span class="at">popup =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">"Red Mangrove&lt;br&gt;"</span>, <span class="fu">as.character</span>(geometry))) <span class="sc">%&gt;%</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addLegend</span>(<span class="st">"bottomright"</span>, </span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>            <span class="at">colors =</span> colors, </span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>            <span class="at">labels =</span> <span class="fu">names</span>(colors), </span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>            <span class="at">title =</span> <span class="st">"Mangrove Samples"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Black Mangrove"</span> <span class="ot">=</span> <span class="st">"black"</span>, </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>            <span class="st">"White Mangrove"</span> <span class="ot">=</span> <span class="st">"white"</span>, </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Red Mangrove"</span> <span class="ot">=</span> <span class="st">"red"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(<span class="at">data =</span> black_mangrove, </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                   <span class="at">radius =</span> <span class="dv">5</span>, </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                   <span class="at">popup =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">"Black Mangrove&lt;br&gt;"</span>, <span class="fu">as.character</span>(geometry))) <span class="sc">%&gt;%</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(<span class="at">data =</span> white_mangrove, </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                   <span class="at">color =</span> <span class="st">"white"</span>, </span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>                   <span class="at">radius =</span> <span class="dv">5</span>, </span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                   <span class="at">popup =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">"White Mangrove&lt;br&gt;"</span>, <span class="fu">as.character</span>(geometry))) <span class="sc">%&gt;%</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addCircleMarkers</span>(<span class="at">data =</span> red_mangrove, </span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>                   <span class="at">color =</span> <span class="st">"red"</span>, </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                   <span class="at">radius =</span> <span class="dv">5</span>, </span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>                   <span class="at">popup =</span> <span class="sc">~</span><span class="fu">paste</span>(<span class="st">"Red Mangrove&lt;br&gt;"</span>, <span class="fu">as.character</span>(geometry))) <span class="sc">%&gt;%</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addLegend</span>(<span class="st">"bottomright"</span>, </span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">colors =</span> colors, </span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>            <span class="at">labels =</span> <span class="fu">names</span>(colors), </span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">title =</span> <span class="st">"Mangrove Samples"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="leaflet html-widget html-fill-item" id="htmlwidget-37d90b8619e9d60ac54a" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-37d90b8619e9d60ac54a">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addCircleMarkers","args":[[25.13580889790673,25.75668556831421,25.20590545609037,25.4875374030223,25.74174426363831,25.73534981735756,25.76845854052742,25.74759733211603,25.80716620128843,25.63159249134969],[-80.97587131304952,-81.31692000322593,-81.13101918746005,-81.18046079042787,-81.30832445793735,-81.26560430279901,-81.31351177759706,-81.29119078404197,-81.33672580931932,-81.2406735118705],5,null,null,{"interactive":true,"className":"","stroke":true,"color":"black","weight":5,"opacity":0.5,"fill":true,"fillColor":"black","fillOpacity":0.2},null,null,["Black Mangrove<br> c(-80.9758713130495, 25.1358088979067)","Black Mangrove<br> c(-81.3169200032259, 25.7566855683142)","Black Mangrove<br> c(-81.1310191874601, 25.2059054560904)","Black Mangrove<br> c(-81.1804607904279, 25.4875374030223)","Black Mangrove<br> c(-81.3083244579373, 25.7417442636383)","Black Mangrove<br> c(-81.265604302799, 25.7353498173576)","Black Mangrove<br> c(-81.3135117775971, 25.7684585405274)","Black Mangrove<br> c(-81.291190784042, 25.747597332116)","Black Mangrove<br> c(-81.3367258093193, 25.8071662012884)","Black Mangrove<br> c(-81.2406735118705, 25.6315924913497)"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addCircleMarkers","args":[[25.77891187269602,25.48845226375894,25.82364539231829,25.86065284001997,25.47074978516277,25.77208696420341,25.84696508256816,25.17061296637299,25.45003801494511,25.55129713080292],[-81.27644169050608,-81.18294319108846,-81.3223670872553,-81.35834893341494,-81.15235842140081,-81.27474518048771,-81.35693604431799,-81.00378009964773,-81.07820075167342,-81.16383385545717],5,null,null,{"interactive":true,"className":"","stroke":true,"color":"white","weight":5,"opacity":0.5,"fill":true,"fillColor":"white","fillOpacity":0.2},null,null,["White Mangrove<br> c(-81.2764416905061, 25.778911872696)","White Mangrove<br> c(-81.1829431910885, 25.4884522637589)","White Mangrove<br> c(-81.3223670872553, 25.8236453923183)","White Mangrove<br> c(-81.3583489334149, 25.86065284002)","White Mangrove<br> c(-81.1523584214008, 25.4707497851628)","White Mangrove<br> c(-81.2747451804877, 25.7720869642034)","White Mangrove<br> c(-81.356936044318, 25.8469650825682)","White Mangrove<br> c(-81.0037800996477, 25.170612966373)","White Mangrove<br> c(-81.0782007516734, 25.4500380149451)","White Mangrove<br> c(-81.1638338554572, 25.5512971308029)"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addCircleMarkers","args":[[25.31733275795271,25.76292695617138,25.33215730296065,25.1947911194626,25.44197743561169,25.75231712412492,25.44152059882549,25.33677338015812,25.38449309338098,25.38769460823702],[-81.14502165798503,-81.36209344967371,-81.10239756860392,-80.77494233219542,-81.10262968329279,-81.35276523308221,-81.11698478605481,-81.11959706391973,-81.08230348003238,-81.08839018907513],5,null,null,{"interactive":true,"className":"","stroke":true,"color":"red","weight":5,"opacity":0.5,"fill":true,"fillColor":"red","fillOpacity":0.2},null,null,["Red Mangrove<br> c(-81.145021657985, 25.3173327579527)","Red Mangrove<br> c(-81.3620934496737, 25.7629269561714)","Red Mangrove<br> c(-81.1023975686039, 25.3321573029607)","Red Mangrove<br> c(-80.7749423321954, 25.1947911194626)","Red Mangrove<br> c(-81.1026296832928, 25.4419774356117)","Red Mangrove<br> c(-81.3527652330822, 25.7523171241249)","Red Mangrove<br> c(-81.1169847860548, 25.4415205988255)","Red Mangrove<br> c(-81.1195970639197, 25.3367733801581)","Red Mangrove<br> c(-81.0823034800324, 25.384493093381)","Red Mangrove<br> c(-81.0883901890751, 25.387694608237)"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["black","white","red"],"labels":["Black Mangrove","White Mangrove","Red Mangrove"],"na_color":null,"na_label":"NA","opacity":0.5,"position":"bottomright","type":"unknown","title":"Mangrove Samples","extra":null,"layerId":null,"className":"info legend","group":null}]}],"limits":{"lat":[25.13580889790673,25.86065284001997],"lng":[-81.36209344967371,-80.77494233219542]}},"evals":[],"jsHooks":[]}</script>
+<div class="leaflet html-widget html-fill-item" id="htmlwidget-39a90df0f5a3d97738eb" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-39a90df0f5a3d97738eb">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addCircleMarkers","args":[[25.13580889790673,25.75668556831421,25.20590545609037,25.4875374030223,25.74174426363831,25.73534981735756,25.76845854052742,25.74759733211603,25.80716620128843,25.63159249134969],[-80.97587131304952,-81.31692000322593,-81.13101918746005,-81.18046079042787,-81.30832445793735,-81.26560430279901,-81.31351177759706,-81.29119078404197,-81.33672580931932,-81.2406735118705],5,null,null,{"interactive":true,"className":"","stroke":true,"color":"black","weight":5,"opacity":0.5,"fill":true,"fillColor":"black","fillOpacity":0.2},null,null,["Black Mangrove<br> c(-80.9758713130495, 25.1358088979067)","Black Mangrove<br> c(-81.3169200032259, 25.7566855683142)","Black Mangrove<br> c(-81.1310191874601, 25.2059054560904)","Black Mangrove<br> c(-81.1804607904279, 25.4875374030223)","Black Mangrove<br> c(-81.3083244579373, 25.7417442636383)","Black Mangrove<br> c(-81.265604302799, 25.7353498173576)","Black Mangrove<br> c(-81.3135117775971, 25.7684585405274)","Black Mangrove<br> c(-81.291190784042, 25.747597332116)","Black Mangrove<br> c(-81.3367258093193, 25.8071662012884)","Black Mangrove<br> c(-81.2406735118705, 25.6315924913497)"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addCircleMarkers","args":[[25.77891187269602,25.48845226375894,25.82364539231829,25.86065284001997,25.47074978516277,25.77208696420341,25.84696508256816,25.17061296637299,25.45003801494511,25.55129713080292],[-81.27644169050608,-81.18294319108846,-81.3223670872553,-81.35834893341494,-81.15235842140081,-81.27474518048771,-81.35693604431799,-81.00378009964773,-81.07820075167342,-81.16383385545717],5,null,null,{"interactive":true,"className":"","stroke":true,"color":"white","weight":5,"opacity":0.5,"fill":true,"fillColor":"white","fillOpacity":0.2},null,null,["White Mangrove<br> c(-81.2764416905061, 25.778911872696)","White Mangrove<br> c(-81.1829431910885, 25.4884522637589)","White Mangrove<br> c(-81.3223670872553, 25.8236453923183)","White Mangrove<br> c(-81.3583489334149, 25.86065284002)","White Mangrove<br> c(-81.1523584214008, 25.4707497851628)","White Mangrove<br> c(-81.2747451804877, 25.7720869642034)","White Mangrove<br> c(-81.356936044318, 25.8469650825682)","White Mangrove<br> c(-81.0037800996477, 25.170612966373)","White Mangrove<br> c(-81.0782007516734, 25.4500380149451)","White Mangrove<br> c(-81.1638338554572, 25.5512971308029)"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addCircleMarkers","args":[[25.31733275795271,25.76292695617138,25.33215730296065,25.1947911194626,25.44197743561169,25.75231712412492,25.44152059882549,25.33677338015812,25.38449309338098,25.38769460823702],[-81.14502165798503,-81.36209344967371,-81.10239756860392,-80.77494233219542,-81.10262968329279,-81.35276523308221,-81.11698478605481,-81.11959706391973,-81.08230348003238,-81.08839018907513],5,null,null,{"interactive":true,"className":"","stroke":true,"color":"red","weight":5,"opacity":0.5,"fill":true,"fillColor":"red","fillOpacity":0.2},null,null,["Red Mangrove<br> c(-81.145021657985, 25.3173327579527)","Red Mangrove<br> c(-81.3620934496737, 25.7629269561714)","Red Mangrove<br> c(-81.1023975686039, 25.3321573029607)","Red Mangrove<br> c(-80.7749423321954, 25.1947911194626)","Red Mangrove<br> c(-81.1026296832928, 25.4419774356117)","Red Mangrove<br> c(-81.3527652330822, 25.7523171241249)","Red Mangrove<br> c(-81.1169847860548, 25.4415205988255)","Red Mangrove<br> c(-81.1195970639197, 25.3367733801581)","Red Mangrove<br> c(-81.0823034800324, 25.384493093381)","Red Mangrove<br> c(-81.0883901890751, 25.387694608237)"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["black","white","red"],"labels":["Black Mangrove","White Mangrove","Red Mangrove"],"na_color":null,"na_label":"NA","opacity":0.5,"position":"bottomright","type":"unknown","title":"Mangrove Samples","extra":null,"layerId":null,"className":"info legend","group":null}]}],"limits":{"lat":[25.13580889790673,25.86065284001997],"lng":[-81.36209344967371,-80.77494233219542]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
-<p>Add any additional processing steps here.</p>
+<p>The downloaded HLS images are uploaded to Google Drive, we can access this data folder through ID. Then, we will collect band 4 and band5 from the dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># drive_auth() for first time to link Google Drive from R, we should do this authentication</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>HLSImages_Folder_ID <span class="ot">&lt;-</span> <span class="st">"1Yf0eElhTCvqnYGUwl8KD6p8yAFZhd5-m"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>HLS_Everglades <span class="ot">&lt;-</span> <span class="fu">drive_ls</span>(<span class="fu">as_id</span>(HLSImages_Folder_ID))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>HLS_band4 <span class="ot">&lt;-</span> HLS_Everglades <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"_B04_"</span>, name))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>HLS_band5 <span class="ot">&lt;-</span> HLS_Everglades <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">"_B05_"</span>, name))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># extract DOY from HLS_band4$name</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>extract_doy <span class="ot">&lt;-</span> <span class="cf">function</span>(names_column) {</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  doy_values <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">".*_doy(</span><span class="sc">\\</span><span class="st">d{7}).*"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">1"</span>, names_column)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">as.numeric</span>(doy_values)) <span class="co"># convert it to numeric</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Add it to DOY column in HLS_band4 and HLS_band5</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>HLS_band4<span class="sc">$</span>DOY <span class="ot">&lt;-</span> <span class="fu">extract_doy</span>(HLS_band4<span class="sc">$</span>name)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>HLS_band5<span class="sc">$</span>DOY <span class="ot">&lt;-</span> <span class="fu">extract_doy</span>(HLS_band5<span class="sc">$</span>name)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># initial the results file (extracted band 4 and band 5 values) as a list</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>HLS_band4<span class="sc">$</span>download_link <span class="ot">&lt;-</span> <span class="fu">sapply</span>(HLS_band4<span class="sc">$</span>drive_resource, <span class="cf">function</span>(x) x<span class="sc">$</span>webContentLink)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>HLS_band5<span class="sc">$</span>download_link <span class="ot">&lt;-</span> <span class="fu">sapply</span>(HLS_band5<span class="sc">$</span>drive_resource, <span class="cf">function</span>(x) x<span class="sc">$</span>webContentLink)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>band4_rasters <span class="ot">&lt;-</span> <span class="fu">lapply</span>(HLS_band4<span class="sc">$</span>download_link, <span class="cf">function</span>(link) <span class="fu">rast</span>(link))</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>band5_rasters <span class="ot">&lt;-</span> <span class="fu">lapply</span>(HLS_band5<span class="sc">$</span>download_link, <span class="cf">function</span>(link) <span class="fu">rast</span>(link))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Extract time-series band reflectance values from dataset.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to extract the 'id' part from a given string (raster name or download link)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>extract_id <span class="ot">&lt;-</span> <span class="cf">function</span>(name) {</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Use regular expressions to extract the 'id' parameter value</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sub</span>(<span class="st">".*[?&amp;]id=([a-zA-Z0-9_-]+).*"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">1"</span>, name)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Create a mapping of 'id' -&gt; DOY from HLS_band5</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>HLS_band5<span class="sc">$</span>id <span class="ot">&lt;-</span> <span class="fu">sapply</span>(HLS_band5<span class="sc">$</span>download_link, extract_id)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>link_to_doy <span class="ot">&lt;-</span> <span class="fu">setNames</span>(HLS_band5<span class="sc">$</span>DOY, HLS_band5<span class="sc">$</span>id) <span class="co"># Create mapping: id -&gt; DOY</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Check CRS of the sample points and rasters</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Checking coordinate systems..."</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>sample_crs <span class="ot">&lt;-</span> <span class="fu">st_crs</span>(black_mangrove) <span class="co"># CRS of black mangrove points</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>raster_crs <span class="ot">&lt;-</span> <span class="fu">crs</span>(band5_rasters[[<span class="dv">1</span>]]) <span class="co"># CRS of the first raster (assumed consistent across rasters)</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Sample CRS:"</span>, sample_crs<span class="sc">$</span>input))</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Raster CRS:"</span>, raster_crs))</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># If CRS is different, reproject the sample points to match the raster CRS</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (sample_crs<span class="sc">$</span>input <span class="sc">!=</span> raster_crs) {</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">"CRS mismatch detected. Reprojecting sample points to match raster CRS..."</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  black_mangrove <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(black_mangrove, raster_crs)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">"Reprojection completed."</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize results table with DOY and placeholders</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>extracted_band5_RM <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">DOY =</span> HLS_band5<span class="sc">$</span>DOY)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(red_mangrove))) {</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  extracted_band5_RM[, <span class="fu">paste0</span>(<span class="st">"Red_"</span>, j)] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Iterate through rasters</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(band5_rasters)) {</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  raster_name <span class="ot">&lt;-</span> <span class="fu">names</span>(band5_rasters[[i]])</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  raster_id <span class="ot">&lt;-</span> <span class="fu">extract_id</span>(raster_name)</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  doy <span class="ot">&lt;-</span> link_to_doy[raster_id]</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.na</span>(doy)) {</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="fu">paste</span>(<span class="st">"Raster ID"</span>, raster_id, <span class="st">"could not be matched with any DOY."</span>))</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  band5_extract <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">extract</span>(band5_rasters[[i]], red_mangrove, <span class="at">method =</span> <span class="st">"simple"</span>)</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">nrow</span>(band5_extract) <span class="sc">!=</span> <span class="fu">nrow</span>(red_mangrove)) {</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Mismatch between extracted values and number of sample points."</span>)</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  row_index <span class="ot">&lt;-</span> <span class="fu">which</span>(extracted_band5_RM<span class="sc">$</span>DOY <span class="sc">==</span> doy)</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(row_index) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="fu">paste</span>(<span class="st">"DOY"</span>, doy, <span class="st">"not found in results table."</span>))</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add extracted values to the correct row</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  extracted_band5_RM[row_index, <span class="fu">paste0</span>(<span class="st">"Red_"</span>, <span class="fu">seq_len</span>(<span class="fu">nrow</span>(red_mangrove)))] <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">as.matrix</span>(band5_extract[, <span class="dv">2</span>]))</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Added values for DOY"</span>, doy, <span class="st">":"</span>, band5_extract[, <span class="dv">2</span>]))</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the results</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(extracted_band5_BM, <span class="st">"data/extracted_band5_BM.csv"</span>, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to compute NDVI from Band 4 and Band 5 datasets</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>compute_ndvi <span class="ot">&lt;-</span> <span class="cf">function</span>(band4_file, band5_file, output_file) {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 1: Read Band 4 and Band 5 CSV files</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Reading Band 4 data from:"</span>, band4_file, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  band4_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(band4_file)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Reading Band 5 data from:"</span>, band5_file, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  band5_data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(band5_file)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 2: Preprocess DOY columns</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Preprocessing DOY columns...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  band4_data<span class="sc">$</span>DOY <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">trimws</span>(band4_data<span class="sc">$</span>DOY))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  band5_data<span class="sc">$</span>DOY <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">trimws</span>(band5_data<span class="sc">$</span>DOY))</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove duplicates if present</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">duplicated</span>(band4_data<span class="sc">$</span>DOY))) {</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Removing duplicate DOY values in Band 4...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    band4_data <span class="ot">&lt;-</span> band4_data[<span class="sc">!</span><span class="fu">duplicated</span>(band4_data<span class="sc">$</span>DOY), ]</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">duplicated</span>(band5_data<span class="sc">$</span>DOY))) {</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Removing duplicate DOY values in Band 5...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    band5_data <span class="ot">&lt;-</span> band5_data[<span class="sc">!</span><span class="fu">duplicated</span>(band5_data<span class="sc">$</span>DOY), ]</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 3: Identify common DOY</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Identifying common DOY values...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  common_doy <span class="ot">&lt;-</span> <span class="fu">intersect</span>(band4_data<span class="sc">$</span>DOY, band5_data<span class="sc">$</span>DOY)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(common_doy) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"No matching DOY values found between Band 4 and Band 5 datasets."</span>)</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Number of matching DOY values:"</span>, <span class="fu">length</span>(common_doy), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data to retain only matching DOY</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>  band4_data <span class="ot">&lt;-</span> band4_data[band4_data<span class="sc">$</span>DOY <span class="sc">%in%</span> common_doy, ]</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>  band5_data <span class="ot">&lt;-</span> band5_data[band5_data<span class="sc">$</span>DOY <span class="sc">%in%</span> common_doy, ]</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Sort datasets by DOY</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>  band4_data <span class="ot">&lt;-</span> band4_data[<span class="fu">order</span>(band4_data<span class="sc">$</span>DOY), ]</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  band5_data <span class="ot">&lt;-</span> band5_data[<span class="fu">order</span>(band5_data<span class="sc">$</span>DOY), ]</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 4: Check alignment of DOY columns</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Checking DOY alignment...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(band4_data<span class="sc">$</span>DOY <span class="sc">==</span> band5_data<span class="sc">$</span>DOY)) {</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    mismatches <span class="ot">&lt;-</span> <span class="fu">which</span>(band4_data<span class="sc">$</span>DOY <span class="sc">!=</span> band5_data<span class="sc">$</span>DOY)</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Mismatched DOY rows detected:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(band4_data<span class="sc">$</span>DOY[mismatches])</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">print</span>(band5_data<span class="sc">$</span>DOY[mismatches])</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"DOY columns still not aligned after sorting."</span>)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"DOY columns are aligned.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 5: Initialize NDVI results</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Initializing NDVI results...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>  ndvi_results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">DOY =</span> band4_data<span class="sc">$</span>DOY)</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 6: Compute NDVI for each sample point</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Computing NDVI for sample points...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (col <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">ncol</span>(band4_data)) {  <span class="co"># Skip the DOY column</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>    band4_col <span class="ot">&lt;-</span> band4_data[, col]</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>    band5_col <span class="ot">&lt;-</span> band5_data[, col]</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate NDVI</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>    ndvi_results[, col] <span class="ot">&lt;-</span> (band5_col <span class="sc">-</span> band4_col) <span class="sc">/</span> (band5_col <span class="sc">+</span> band4_col)</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 7: Add column names to NDVI results</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>(ndvi_results) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(band4_data)</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 8: Save NDVI results to CSV</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Saving NDVI results to:"</span>, output_file, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write.csv</span>(ndvi_results, output_file, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"NDVI computation completed successfully.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a><span class="fu">compute_ndvi</span>(<span class="st">"data/extracted_band4_BM.csv"</span>, <span class="st">"data/extracted_band5_BM.csv"</span>, <span class="st">"data/ndvi_BM.csv"</span>)</span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="fu">compute_ndvi</span>(<span class="st">"data/extracted_band4_RM.csv"</span>, <span class="st">"data/extracted_band5_RM.csv"</span>, <span class="st">"data/ndvi_RM.csv"</span>)</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a><span class="fu">compute_ndvi</span>(<span class="st">"data/extracted_band4_WM.csv"</span>, <span class="st">"data/extracted_band5_WM.csv"</span>, <span class="st">"data/ndvi_WM.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Read NDVI data for the three species</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>BM_ndvi <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/ndvi_BM.csv"</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>WM_ndvi <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/ndvi_WM.csv"</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>RM_ndvi <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/ndvi_RM.csv"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Calculate average NDVI for each species</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>Avg_BM_ndvi <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(BM_ndvi[, <span class="sc">-</span><span class="dv">1</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)  <span class="co"># Exclude DOY column</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>Avg_WM_ndvi <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(WM_ndvi[, <span class="sc">-</span><span class="dv">1</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>Avg_RM_ndvi <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(RM_ndvi[, <span class="sc">-</span><span class="dv">1</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Combine data into a single dataframe for plotting</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>avg_ndvi_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">Species =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Black Mangrove"</span>, <span class="st">"White Mangrove"</span>, <span class="st">"Red Mangrove"</span>), </span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>                <span class="at">times =</span> <span class="fu">c</span>(<span class="fu">length</span>(Avg_BM_ndvi), <span class="fu">length</span>(Avg_WM_ndvi), <span class="fu">length</span>(Avg_RM_ndvi))),</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">Average_NDVI =</span> <span class="fu">c</span>(Avg_BM_ndvi, Avg_WM_ndvi, Avg_RM_ndvi)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 4: Filter data to only include NDVI values between 0 and 1</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>avg_ndvi_data <span class="ot">&lt;-</span> avg_ndvi_data <span class="sc">%&gt;%</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Average_NDVI <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> Average_NDVI <span class="sc">&lt;</span> <span class="dv">1</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 5: Calculate group sizes for variable box widths</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>species_counts <span class="ot">&lt;-</span> avg_ndvi_data <span class="sc">%&gt;%</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Species) <span class="sc">%&gt;%</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Count =</span> <span class="fu">n</span>())</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 6: Merge counts back into the main dataframe</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>avg_ndvi_data <span class="ot">&lt;-</span> avg_ndvi_data <span class="sc">%&gt;%</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(species_counts, <span class="at">by =</span> <span class="st">"Species"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to preprocess DOY to extract the day of year</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>preprocess_doy <span class="ot">&lt;-</span> <span class="cf">function</span>(doy_column) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(<span class="fu">substr</span>(doy_column, <span class="dv">5</span>, <span class="dv">7</span>))  <span class="co"># Extract last three digits</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to remove outliers based on 3x standard deviation</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>remove_outliers <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  mean_ndvi <span class="ot">&lt;-</span> <span class="fu">mean</span>(data<span class="sc">$</span>Average_NDVI, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  std_ndvi <span class="ot">&lt;-</span> <span class="fu">sd</span>(data<span class="sc">$</span>Average_NDVI, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  threshold_low <span class="ot">&lt;-</span> mean_ndvi <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> std_ndvi</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  threshold_high <span class="ot">&lt;-</span> mean_ndvi <span class="sc">+</span> <span class="dv">3</span> <span class="sc">*</span> std_ndvi</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  data <span class="sc">%&gt;%</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Average_NDVI <span class="sc">&gt;=</span> threshold_low <span class="sc">&amp;</span> Average_NDVI <span class="sc">&lt;=</span> threshold_high)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to fit harmonic regression and predict NDVI</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>fit_harmonic_regression <span class="ot">&lt;-</span> <span class="cf">function</span>(data, species_name) {</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Preprocess DOY and remove outliers</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">DOY =</span> <span class="fu">preprocess_doy</span>(DOY)) <span class="sc">%&gt;%</span>  <span class="co"># Preprocess DOY to extract day of year</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(Average_NDVI <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> Average_NDVI <span class="sc">&lt;</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span>  <span class="co"># Filter valid NDVI values</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">remove_outliers</span>()  <span class="co"># Remove outliers based on 3x std</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fit harmonic regression</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">lm</span>(Average_NDVI <span class="sc">~</span> <span class="fu">cos</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> DOY <span class="sc">/</span> <span class="dv">365</span>) <span class="sc">+</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> DOY <span class="sc">/</span> <span class="dv">365</span>), <span class="at">data =</span> data)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Generate DOY sequence for predictions</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>  doy_seq <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">365</span>, <span class="at">by =</span> <span class="dv">1</span>)</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>  predictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> <span class="fu">data.frame</span>(</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">DOY =</span> doy_seq</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return observed data, fitted model, and predictions</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> data,</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">model =</span> model,</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">predictions =</span> <span class="fu">data.frame</span>(<span class="at">DOY =</span> doy_seq, <span class="at">Fitted_NDVI =</span> predictions),</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">species =</span> species_name</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Load NDVI data for three species</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>species1_ndvi <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/ndvi_BM.csv"</span>)</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>species2_ndvi <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/ndvi_WM.csv"</span>)</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>species3_ndvi <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/ndvi_RM.csv"</span>)</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Calculate average NDVI for each species</span></span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>species1_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">DOY =</span> species1_ndvi<span class="sc">$</span>DOY, <span class="at">Average_NDVI =</span> <span class="fu">rowMeans</span>(species1_ndvi[, <span class="sc">-</span><span class="dv">1</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>species2_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">DOY =</span> species2_ndvi<span class="sc">$</span>DOY, <span class="at">Average_NDVI =</span> <span class="fu">rowMeans</span>(species2_ndvi[, <span class="sc">-</span><span class="dv">1</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>species3_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">DOY =</span> species3_ndvi<span class="sc">$</span>DOY, <span class="at">Average_NDVI =</span> <span class="fu">rowMeans</span>(species3_ndvi[, <span class="sc">-</span><span class="dv">1</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Fit harmonic regression for each species</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>species1_fit <span class="ot">&lt;-</span> <span class="fu">fit_harmonic_regression</span>(species1_data, <span class="st">"Black Mangrove"</span>)</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>species2_fit <span class="ot">&lt;-</span> <span class="fu">fit_harmonic_regression</span>(species2_data, <span class="st">"White Mangrove"</span>)</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>species3_fit <span class="ot">&lt;-</span> <span class="fu">fit_harmonic_regression</span>(species3_data, <span class="st">"Red Mangrove"</span>)</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 4: Combine predictions for visualization</span></span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>all_predictions <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>  species1_fit<span class="sc">$</span>predictions <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">Species =</span> <span class="st">"Black Mangrove"</span>),</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>  species2_fit<span class="sc">$</span>predictions <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">Species =</span> <span class="st">"White Mangrove"</span>),</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>  species3_fit<span class="sc">$</span>predictions <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">Species =</span> <span class="st">"Red Mangrove"</span>)</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 </section>
 </section>
@@ -350,6 +573,66 @@ Projected CRS: NAD83 / UTM zone 17N</code></pre>
 <p>[~200 words]</p>
 <p>Tables and figures (maps and other graphics) are carefully planned to convey the results of your analysis. Intense exploration and evidence of many trials and failures. The author looked at the data in many different ways before coming to the final presentation of the data.</p>
 <p>Show tables, plots, etc. and describe them.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(avg_ndvi_data, <span class="fu">aes</span>(<span class="at">x =</span> Species, <span class="at">y =</span> Average_NDVI, <span class="at">fill =</span> Species)) <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_violin</span>(<span class="at">trim =</span> <span class="cn">TRUE</span>, <span class="at">scale =</span> <span class="st">"width"</span>) <span class="sc">+</span>  <span class="co"># Create violin plot</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">width =</span> <span class="fl">0.1</span>, <span class="at">outlier.size =</span> <span class="dv">1</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span>  <span class="co"># Add a boxplot inside the violin</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Black Mangrove"</span> <span class="ot">=</span> <span class="st">"black"</span>, <span class="st">"White Mangrove"</span> <span class="ot">=</span> <span class="st">"gray"</span>, <span class="st">"Red Mangrove"</span> <span class="ot">=</span> <span class="st">"red"</span>)) <span class="sc">+</span>  <span class="co"># Custom colors</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span>  <span class="co"># Limit Y-axis to (0, 1)</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Yearly Average NDVI for Three Species"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Species"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Average NDVI"</span>) <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 5: Plot observed data and fitted phenology curves</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Observed NDVI points</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> species1_fit<span class="sc">$</span>data, <span class="fu">aes</span>(<span class="at">x =</span> DOY, <span class="at">y =</span> Average_NDVI, <span class="at">color =</span> <span class="st">"Black Mangrove"</span>), <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> species2_fit<span class="sc">$</span>data, <span class="fu">aes</span>(<span class="at">x =</span> DOY, <span class="at">y =</span> Average_NDVI, <span class="at">color =</span> <span class="st">"White Mangrove"</span>), <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> species3_fit<span class="sc">$</span>data, <span class="fu">aes</span>(<span class="at">x =</span> DOY, <span class="at">y =</span> Average_NDVI, <span class="at">color =</span> <span class="st">"Red Mangrove"</span>), <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Fitted harmonic regression curves</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> all_predictions, <span class="fu">aes</span>(<span class="at">x =</span> DOY, <span class="at">y =</span> Fitted_NDVI, <span class="at">color =</span> Species), <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Black Mangrove"</span> <span class="ot">=</span> <span class="st">"black"</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"White Mangrove"</span> <span class="ot">=</span> <span class="st">"gray"</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Red Mangrove"</span> <span class="ot">=</span> <span class="st">"red"</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Harmonic Regression of NDVI Phenology"</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Day of Year (DOY)"</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"NDVI"</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Species"</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">16</span>),  <span class="co"># Center-align title and adjust size</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>),  <span class="co"># Adjust axis title size</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),  <span class="co"># Adjust axis text size</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),  <span class="co"># Adjust legend title size</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>)  <span class="co"># Adjust legend text size</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+ℹ Please use `linewidth` instead.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <section id="dygraphs-example" class="level3">
 <h3 class="anchored" data-anchor-id="dygraphs-example">Dygraphs Example</h3>
 </section>
