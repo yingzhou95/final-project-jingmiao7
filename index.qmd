@@ -441,7 +441,7 @@ ggplot() +
   theme(
     plot.title = element_text(hjust = 0.5))
 ```
-# Conclusions
+# Conclusion
 
 This study utilized time-series HLS data on 2023 to analyze the phenology of three mangrove species in Everglades, Florida. To be more specific, I applied harmonic regression to generate phenology based on time-series NDVI. From the resluts, we can see that different mangrove species present different average greenness (average NDVI) and pheonogy through the year. Moreover, to refine this study, we can filter the image pixels influenced by clouds and tides. 
 In conclusion, this study help in understanding the dynamics within one mangrove ecosystem, aiding conservation efforts and the management of coastal ecosystems in the face of climate change.
