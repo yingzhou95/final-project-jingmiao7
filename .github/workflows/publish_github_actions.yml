@@ -28,7 +28,7 @@ jobs:
         uses: r-lib/actions/setup-r@v2
 
       - name: Install R packages
-        run: Rscript -e "install.packages('terra'); install.packages('ggplot2'); install.packages('sf'); install.packages('leaflet');install.packages('RColorBrewer')"
+        run: Rscript -e "install.packages('terra'); install.packages('ggplot2'); install.packages('sf'); install.packages('leaflet');install.packages('RColorBrewer'); install.packages('dplyr'); install.packages('googledrive')"
 
       - name: Install R Dependencies
         uses: r-lib/actions/setup-renv@v2
