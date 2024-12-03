@@ -1,120 +1,275 @@
 ---
-title: "My Final Project Template"
-author: Your name here
-subtitle: Subtitle here if desired
+title: "Hurricane Milton Abnormality"
+author: Logan Hales
+subtitle: Hurricanes
 date: today
 date-format: long
 ---
 
 # Introduction
 
-\[\~ 200 words\]
-
-Clearly stated background and questions / hypotheses / problems being addressed. Sets up the analysis in an interesting and compelling way. Include figures if you like.
+#Hurricane Milton was an abnormal hurricane in the path it took throughout the Gulf of Mexico, Florida, and in the Atlantic Ocean when compared to other hurricanes during 2024, and in previous hurricane storm season as well. Because of this, I intend to analyze the track of Hurricane Milton through the Gulf of Mexico in comparison to other hurricanes and tropical storm that occurred in the Gulf of Mexico, and via the storm tracks and storm events such as rain and wind measurements of hurricanes from the past 20+ years. In order of doing this, I will be referring to different hurricane records taken from NOAA’s Historical Hurricanes and Tropical systems webpage, the CRAN Hurricane Exposure package and NOAA’s Historical Hurricane Tracks webpage, along with the in class lab’s data set from NOAA's international-best-track-archive-for-climate-stewardship-ibtracs, as one of the beast means of analysis for the possible change sin strength of hurricane Milton when compared to these other hurricanes. With this, I will also be referring to the Intergovernmental Panel on Climate Change (IPCC) 2022 Sixth Assessment Report to make assessments of the possible strength future hurricanes and tropical storms may have, based on projections about climate change that are listed within the report.
 
 # Materials and methods
 
-\[\~ 200 words\]
+#The primary data being used in the R studio code was NOAA’s IBTrACS V04r01 CVS data, (Knapp et. al, 2010) & (Gahtan et. al, 2024), to produce the Milton maps and plots; and the Hurricane exposure package on R studio, (Anderson, 2020) to produce the Gulf of Mexico hurricane tracks. Other sources include world & us_states data derived from NOAA aswell, with the R studio packages of drat, sf, tidyverse, ggmap, lubridate, Hirricane exposure and hurricane exposure data, tmap, egg, cowplot, dplyr, and tidyr, to sort and organize the NOAA data into the maps and plots provided below in the results section of the website.
 
-Narrative: Clear narrative description of the data sources and methods. Includes data from at least two sources that were integrated / merged in R.
+#The code provided to do this separates the hurricane data recorded from hurricane Milton and to reintegrate it back into the whole hurricane data measured to show the differences in the path it took in comparison to other hurricanes between 2000-2020. The Gulf of Mexico hurricane tracks provided are used for visual differences with hurricanes that formed in the Gulf of Mexico to Milton’s tracks, as the only variable it has is only wind speeds. The boxplots and histograms accomplish a similar method of comparing the differences between the pressure and wind speeds of hurricane Milton and every other hurricane between 2000 and 2020 but without combining them.
 
-Code: The code associated with the project is well organized and easy to follow. Demonstrates mastery of R graphics and functions.
 
-Data: The underlying data are publicly accessible via the web and downloaded/accessed within the Rmd script. If you want to use your own data, you must make it available on a website (e.g. Figshare) so that others are able to re-run your code.
 
-You can do bullets like this:
-
--   The first most important thing
--   The second most important thing
--   The third most important thing
-
-You can do numbers like this:
-
-1.  The first most important thing
-2.  The second most important thing
-3.  The third most important thing
-
-See <http://rmarkdown.rstudio.com/> for all the amazing things you can do.
-
-Here's my first code chunk.
 
 ```{r}
-x=3+4
+#SCRIPT
+if (!requireNamespace("drat", quietly = TRUE)) {
+    install.packages("drat")
+}
+library(drat)
+addRepo("geanders")
+install.packages("hurricaneexposure") 
+install.packages("hurricaneexposuredata")
+if (!requireNamespace("sf", quietly = TRUE)) {
+    install.packages("sf")
+}
+if (!requireNamespace("tidyverse", quietly = TRUE)) {
+    install.packages("tidyverse")
+}
+if (!requireNamespace("ggmap", quietly = TRUE)) {
+    install.packages("ggmap")
+}
+if (!requireNamespace("spData", quietly = TRUE)) {
+    install.packages("spData")
+}
+if (!requireNamespace("lubridate", quietly = TRUE)) {
+    install.packages("lubridate")
+}
+if (!requireNamespace("hurricaneexposure", quietly = TRUE)) {
+    install.packages("hurricaneexposure")
+}
+if (!requireNamespace("hurricaneexposuredata", quietly = TRUE)) {
+    install.packages("hurricaneexposuredata")
+}
+if (!requireNamespace("tmap", quietly = TRUE)) {
+    install.packages("tmap")
+}
+if (!requireNamespace("egg", quietly = TRUE)) {
+    install.packages("egg")
+}
+if (!requireNamespace("cowplot", quietly = TRUE)) {
+    install.packages("cowplot")
+}
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+    install.packages("dplyr")
+}
+if (!requireNamespace("tidyr", quietly = TRUE)) {
+    install.packages("tidyr")
+}
+library(sf)
+library(tidyverse)
+library(ggmap)
+library(spData)
+library(lubridate)
+library(hurricaneexposure)
+library(hurricaneexposuredata)
+data(world)
+data(us_states)
+data("hurr_tracks")
+head(hurr_tracks)
+data("storm_events")
+head(storm_events)
+library(tmap)
+library(egg)
+library(cowplot)
+library(dplyr)
+library(tidyr)
+# Download a csv from noaa with storm track information
+dataurl="https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/csv/ibtracs.NA.list.v04r01.csv"
+
+storm_data <- read_csv(dataurl)
+
+
+
 ```
 
-Refer to output in your narrative like this: x=`r x` .
-
-Load any required packages in a code chunk (you may need to install some packages):
 
 ```{r, message=F, warning=F}
-library(tidyverse)
-library(leaflet)
-library(kableExtra)
-library(htmlwidgets)
-library(widgetframe)
-knitr::opts_chunk$set(widgetframe_widgets_dir = 'widgets' ) 
-knitr::opts_chunk$set(cache=TRUE)  # cache the results for quick compiling
-```
 
-## Download and clean all required data
+storm_data_new <- storm_data%>%
+  mutate(year = year(ISO_TIME))%>%
+  filter(year >= 2000) %>%
+  mutate_if(is.numeric, function(x) ifelse(x==-999.0,NA,x)) %>%
+  mutate(decade=(floor(year/10)*10))
 
-```{r}
-n=20
-data=data.frame(x=runif(n,-180,180),
-                y=runif(n,-60,60),
-                size = runif(n, 5, 20),
-                category = factor(
-                  sample(letters[1:5], n, replace = TRUE)
-                  ),
-                value = rnorm(n))
-```
 
-```{r, results='asis'}
-data %>% 
-  slice(1:10) %>% #show only 1:n rows
-  kable(digits=2,align="c")%>% #make table and round to two digits
-  kable_styling(bootstrap_options = 
-                  c("striped", "hover", "condensed", "responsive")) #apply other formatting
+sf_storm_data <- storm_data_new %>%
+  st_as_sf(coords=c("LON","LAT"),crs=4326, remove = FALSE)
+
+region <- st_bbox(sf_storm_data)
+
+ggplot(data = world)+
+  geom_sf()+
+  stat_bin2d(data=storm_data_new, aes(y=st_coordinates(sf_storm_data)[,2], x=st_coordinates(sf_storm_data)[,1]),bins=100)+
+  facet_wrap(~decade)+
+  scale_fill_distiller(palette="YlOrRd", trans="log", direction=-1, breaks = c(1,10,100,1000))+
+  coord_sf(ylim=region[c(2,4)], xlim=region[c(1,3)])
+
+#26055, 26109
+Milton_storm <- storm_data_new %>%
+  mutate(year = year(ISO_TIME))%>%
+  filter(year == 2024)%>%
+  filter(NUMBER == 71)
+
+
+Milton_storm_data <- Milton_storm %>%
+  st_as_sf(coords=c("LON","LAT"),crs=4326, remove = FALSE)
+
+region <- st_bbox(sf_storm_data)
+
+Milton_Map <- ggplot(data = world)+ 
+  geom_sf() + 
+  stat_bin2d(data=Milton_storm_data, aes(y=st_coordinates(Milton_storm_data)[,2], 
+  x=st_coordinates(Milton_storm_data)[,1]),bins=100)+
+  scale_fill_distiller(palette="YlOrRd", 
+  trans="log", direction=-1, breaks = c(1,10,100,1000))+
+  coord_sf(ylim=region[c(2,4)], xlim=region[c(1,3)])
+
+Milton_Map
+
+
 ```
 
 Add any additional processing steps here.
 
+
 # Results
 
-\[\~200 words\]
+#Hurricane Milton, (black), and the hurricane tracks, (coloured red to orange based on count), and the different boxplots and histograms measuring the Pressure and Wind records for both the overall hurricanes measured between 2000 and 2020 – and Milton, shows a clear difference within Milton’s tracks, pressure, and wind speed kept during its duration, (Knapp et. al, 2010) & (Gathan et. al, 2024). The storm track for Milton in the ggplot map shows that formed in the Gulf of Mexico, moved north of 20 degrees longitude, taking a sharp right eastward through the middle of Florida to the Atlantic Ocean. Other hurricane tracks are visible moving across Central America to the pacific, and to parts of Europe, Canada, and the South-Central U.S. When compared to other Gulf of Mexico Hurricanes from the Hurricane exposure package, hurricane Erika is the only storm to follow a similar path to Florida but it do not make landfall according to the map, (Anderson, 2020).
 
-Tables and figures (maps and other graphics) are carefully planned to convey the results of your analysis. Intense exploration and evidence of many trials and failures. The author looked at the data in many different ways before coming to the final presentation of the data.
+#The difference between the pressure and wind boxplots is evident by the differences between the first quartiles, medians, and third quartiles, along with the previously stated maximum measurements. The Range between the first and third quartiles for the Milton wind speed boxplot is between ~40 to ~120 knots, with the overall windspeed for all hurricanes being between ~35 to ~60 knots. The pressure ranges are between ~925 to ~990 mb, with the range for all hurricanes being between ~985 and ~1000 mb. What should also be noted is that the distribution of values recorded for Milton in the histograms are highly variable, as the peaks for the values rise and sink throughout the entire record, (Knapp et. al, 2010) & (Gathan et. al, 2024).
 
-Show tables, plots, etc. and describe them.
 
-```{r, fig.width=6, fig.height=3, fig.cap="Map of completely random data"}
-m <- leaflet(data) %>% 
-  addTiles() %>% 
-  addCircleMarkers(~x, ~y, radius = ~size,color = ~as.factor(category)) %>% 
-  addPopups(~x[2], ~y[2], "Random popup")
-m  # a map with the default OSM tile layer
+
+```{r}
+#RUN EACH HURRICANE IN THE GULF TO COMPRE IT TO THE TRACK OF MILTON
+
+storms_all <- hurr_tracks %>%
+  select(storm_id) %>%
+  distinct() %>%
+  mutate(year = stringr::str_extract(storm_id, "-[0-9].+")) %>%
+  filter(year <= 2018)
+map_tracks((storms = storms_all$storm_id),
+alpha = 0.5, plot_points = TRUE, color = "blue")
+
+
+
+
+
+Gulf_2002 <- map_tracks(storms = c("Bertha-2002", "Fay-2002"),
+           alpha = 0.5, plot_points = TRUE, color = "blue")
+
+Gulf_2003 <- map_tracks(storms = c("Claudette-2003", "Erika-2003","Grace-2003"),
+           alpha = 0.5, plot_points = TRUE, color = "blue")
+
+Gulf_2005 <- map_tracks(storms = c("Emily-2005", "Rita-2005"),
+           alpha = 0.5, plot_points = TRUE, color = "blue")
+
+Gulf_2007 <- map_tracks(storms = c("Erin-2007", "Humberto-2007"),
+           alpha = 0.5, plot_points = TRUE, color = "blue")
+
+Gulf_2008 <- map_tracks(storms = c("Dolly-2008", "Eduoard-2008","Ike-2008"),
+           alpha = 0.5, plot_points = TRUE, color = "blue")
+
+Gulf_2010 <- map_tracks(storms = c("Alex-2010", "Hermine-2010"),
+           alpha = 0.5, plot_points = TRUE, color = "blue")
+
+Gulf_2017 <- map_tracks(storms = c("Cindy-2017", "Harvey-2017"),
+           alpha = 0.5, plot_points = TRUE, color = "blue")
+
+#Gulf_All <- map_tracks(storm = c(Gulf_1989, Gulf_1998, Gulf_2002, Gulf_2003, Gulf_2005, Gulf_2007, Gulf_2008, Gulf_2010, Gulf_2017), 
+  #alpha = 0.5, plot_points = TRUE, color = "blue")
+
+
+Gulf_2002
+Gulf_2003
+Gulf_2005
+Gulf_2007
+Gulf_2008
+Gulf_2010
+Gulf_2017
+map_tracks(storms = c("Erika-2003"),
+           alpha = 0.5, plot_points = TRUE, color = "blue")
+
+```
+
+
+```{r}
+ggplot(data = world)+
+  geom_sf()+
+  stat_bin2d(data=storm_data_new, aes(y=st_coordinates(sf_storm_data)[,2], x=st_coordinates(sf_storm_data)[,1]),bins=100)+
+  geom_sf(data = Milton_storm_data)+
+  scale_fill_distiller(palette="YlOrRd", trans="log", direction=-1, breaks = c(1,10,100,1000))+
+  coord_sf(ylim=region[c(2,4)], xlim=region[c(1,3)])
+
+```
+```{r}
+Milton_Wind_speed_HIST <- ggplot(Milton_storm_data, aes(x=as.numeric(USA_WIND)))+geom_histogram()
+Milton_Wind_Box <- ggplot(Milton_storm_data, aes(x=as.numeric(USA_WIND)))+geom_boxplot()
 ```
 
 ```{r}
-data %>% 
-  ggplot(aes(x=x,y=y,col=category))+
-  geom_point()
-```
+All_Wind_speed_HIST <-ggplot(storm_data_new, aes(x=as.numeric(USA_WIND)))+geom_histogram()+geom_vline(xintercept = 150)
+All_Wind_speed_HIST_min <-ggplot(storm_data_new, aes(x=as.numeric(USA_WIND)))+geom_histogram()+geom_vline(xintercept = 25)
+All_Wind_Box <- ggplot(storm_data_new, aes(x=as.numeric(USA_WIND)))+geom_boxplot() 
 
-### Dygraphs Example
+```
 
 ```{r}
-library(dygraphs)
-dygraph(nhtemp, main = "New Haven Temperatures") |> 
-  dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01")) 
+Milton_Pres_Hist <- ggplot(Milton_storm_data, aes(x=as.numeric(USA_PRES)))+geom_histogram()
+Milton_Pres_Box <- ggplot(Milton_storm_data, aes(x=as.numeric(USA_PRES)))+geom_boxplot()
+
 ```
+
+```{r}
+All_Pres_Hist <-ggplot(storm_data_new, aes(x=as.numeric(USA_PRES)))+geom_histogram()+geom_vline(xintercept = 1009)
+All_Pres_Hist_min <-ggplot(storm_data_new, aes(x=as.numeric(USA_PRES)))+geom_histogram()+geom_vline(xintercept = 901)
+All_Pres_Box <-ggplot(storm_data_new, aes(x=as.numeric(USA_PRES)))+geom_boxplot()
+
+```
+
+```{r}
+plot_grid(Milton_Wind_Box, All_Wind_Box,aling = "hv", axis = "tblr", ncol=2, nrow=2, cols=NULL, rows =NULL, hjust = 1, vjust = 1)
+```
+
+```{r}
+ggarrange(Milton_Wind_speed_HIST, All_Wind_speed_HIST)
+```
+
+```{r}
+plot_grid(Milton_Pres_Box, All_Pres_Box,aling = "hv", axis = "tblr", ncol=2, nrow=2, cols=NULL, rows =NULL, hjust = 1, vjust = 1)
+```
+
+```{r}
+All_Pres_Hist <-ggplot(storm_data_new, aes(x=as.numeric(USA_PRES)))+geom_histogram()+geom_vline(xintercept = 1009)
+ggarrange(Milton_Pres_Hist, All_Pres_Hist)
+```
+```{r}
+ggarrange(All_Wind_speed_HIST_min, All_Pres_Hist_min)
+```
+
+
 
 # Conclusions
 
-\[\~200 words\]
-
-Clear summary adequately describing the results and putting them in context. Discussion of further questions and ways to continue investigation.
+#The resulting measurements on Hurricane Milton’s wind speed and pressure are variable overall to the measurements of all hurricanes from 2000 to 2020, Hurricane Milton has presented characteristics that are abnormal for a hurricane within the past 20 years. Hurricane data gathered from NOAA’s IBTrACS Project, (Knapp et. al, 2010) & (Gathan et. al, 2024), transformed into the prior map showing hurricane tracks, and the plots showing the difference between the recorded pressure and windspeeds for Milton and the hurricanes form 2000 – 2020. Milton has a higher variation between pressure and wind speed compared to the more tightly knit range of all the hurricanes measured. Maximum and minimum measurements for Milton, however, fall into some of the most common maximums such as the 1009 mb maximum pressure achieved, and the 25-knot wind speed minimum it achieved as well. One of the most visible difference hurricane Milton is the path it took north to 22 degrees north and then moving west through Florida, which is unusual for gulf hurricanes. Milton when compared to other hurricanes overall, portrays characteristics and measures of pressure and wind speeds that may be considered abnormal for hurricanes in general. These abnormal changes may be attributed to ocean warming from anthropogenic climate change. The IPCC 6th report shows that oceans overall have had an increase in temperature by 0.88 degrees Celsius during the 20th century and is to continue into the 21st century, (Pörtner et. Al, 2022, p.392-393). In North America, climate change has caused intense weather events with an example listed that Hurricanes are expected to get worse, which has been assessed from previous hurricanes such as Hurricane Andrews in 1992, (p.1938-1939). Although Hurricane Andrews is not in the time frame, the expectations present a reality that Milton was an abnormal hurricane because of how extreme some of it’s measures have been.
 
 # References
 
-All sources are cited in a consistent manner
+#Brooke Anderson, (2020). Using the hurricaneexposure package. https://cran.r-project.org/web/packages/hurricaneexposure/vignettes/hurricaneexposure.html
+
+#Gahtan, J., K. R. Knapp, C. J. Schreck, H. J. Diamond, J. P. Kossin, M. C. Kruk, 2024: International Best Track Archive for Climate Stewardship (IBTrACS) Project, Version 4r01. [indicate subset used]. NOAA National Centers for Environmental Information. doi:10.25921/82ty-9e16 [access date].
+
+#Knapp, K. R., M. C. Kruk, D. H. Levinson, H. J. Diamond, and C. J. Neumann, 2010: The International Best Track Archive for Climate Stewardship (IBTrACS): Unifying tropical cyclone best track data. Bulletin of the American Meteorological Society, 91, 363-376. doi:10.1175/2009BAMS2755.1
+
+#Pörtner, H. O., Roberts, D. C., Tignor, M. M. B., Poloczanska, E., Mintenbeck, K., Alegría, A., Craig, M., Langsdorf, S., Löschke, S., Möller, V., Okem, A., & Rama, B. (Eds.). (2022). Climate change 2022: Impacts, adaptation and vulnerability. IPCC. Retrieved December 10, 2022, from https://www.ipcc.ch/report/sixth-assessment-report-working-group-ii/ (Accessed December 10th, 2022)
+
+
