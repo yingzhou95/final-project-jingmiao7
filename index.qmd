@@ -1,120 +1,449 @@
 ---
-title: "My Final Project Template"
-author: Your name here
-subtitle: Subtitle here if desired
+title: "Phenology of Mangroves"
+author: Jing Miao
+subtitle: "Fall 2024 GEO 511 Final Project"
 date: today
 date-format: long
+output:
+  html_document:
+    mathjax: true
+    toc: true
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
 ---
 
 # Introduction
 
-\[\~ 200 words\]
-
-Clearly stated background and questions / hypotheses / problems being addressed. Sets up the analysis in an interesting and compelling way. Include figures if you like.
+**Mangrove forests** are salt-tolerant trees and shrubs that thrive in intertidal zones of tropical and subtropical regions [@vaiphasa_tropical_2005]. These ecosystems are highly valued as blue carbon reservoirs and natural coastal protection systems [@macreadie2021blue]. Within mangrove ecosystems, different species display significant diversity in tree structures, growth strategies, and environmental adaptations. While mangroves are evergreen, remote sensing observations reveal that distinct species exhibit varying temporal patterns in the onset, persistence, and greenness of their growth stages.<br> This study aims to characterize the phenological patterns of three mangrove species: **red mangrove** (*Rhizophora mangle*), **white mangrove** (*Avicennia germinans*), and **black mangrove** (*Laguncularia racemosa*) in Everglades National Park, Florida. To be more specific, high-temporal-resolution remote sensing data from the Harmonized Landsat and Sentinel (HLS) dataset for 2023 will be used to extract Normalized Difference Vegetation Index (NDVI) values, enabling a detailed analysis of the phenological differences among these dominant species.<br>
+![**Figure 1.** Three Dominant mangrove species in South Florida and their zonation.](/data/dominant-mangrove-species-of-south-florida.png)
 
 # Materials and methods
 
-\[\~ 200 words\]
+To extract phenological information of three mangrove species from remote sensing-based observation, we need:
 
-Narrative: Clear narrative description of the data sources and methods. Includes data from at least two sources that were integrated / merged in R.
+## Materials
+### Harmonized Landsat and Sentinel (HLS) dataset
+The HLS product integrates data from the Landsat 8 (or Landsat 9) and Sentinel-2A (or Sentinel-2B) satellites, producing a harmonized surface reflectance dataset with a 30-meter spatial resolution. Moreover, HLS includes a Quality Assurance (QA) band, which provides data quality filters and masks for clouds, cloud shadows, and water bodies. **To generate time series NDVI from HLS dataset, red and near inf-red bands are collected.**
 
-Code: The code associated with the project is well organized and easy to follow. Demonstrates mastery of R graphics and functions.
+### Geographical location of mangrove samples
+The geographical information of three mangrove species are collected from Project: The Vegetation of Everglades National Park: Final Report (Spatial Data) [@ruiz2021everglades]. **10 samples of each three mangrove species (red mangrove, white mangrove, and black mangrove) are extracted from this final report.**
 
-Data: The underlying data are publicly accessible via the web and downloaded/accessed within the Rmd script. If you want to use your own data, you must make it available on a website (e.g. Figshare) so that others are able to re-run your code.
+### Normalized Difference Vegetation Index
+NDVI is widely used to monitor vegetation health and phenological changes over time. The formula is:<br>
+<div style="text-align: center;">
+$$
+\text{NDVI} = \frac{(NIR - RED)}{(NIR + RED)}
+$$
+</div><br>
 
-You can do bullets like this:
+### Harmonic Regression
+Harmonic regression is a statistical technique that fits sine and cosine functions to data and is adept at identifying and modeling the cyclical variations inherent in time series with periodic patterns.<br>
+<div style="text-align: center;">
+$$
+y_t = \beta_0 + \sum_{k=1}^{K} \left( \beta_{k} \cos\left(\frac{2\pi k t}{T}\right) + \gamma_{k} \sin\left(\frac{2\pi k t}{T}\right) \right) + \epsilon_t
+$$
+</div><br>
+Where:
 
--   The first most important thing
--   The second most important thing
--   The third most important thing
+- $y_t$: The observed value at time $t$.
+- $\beta_0$: The intercept or constant term in the model.
+- $\beta_k$: The coefficient for the cosine term corresponding to the $k$-th harmonic.
+- $\gamma_k$: The coefficient for the sine term corresponding to the $k$-th harmonic.
+- $T$: The period of the data (e.g., the number of days in a year if the data is annual).
+- $t$: The time point or index (often representing the day of the year, etc.).
+- $K$: The total number of harmonics (sinusoidal terms) included in the model, usually based on the periodicity of the data.
+- $\epsilon_t$: The error term at time $t$, capturing the residual variability in the data that is not explained by the harmonic components.
 
-You can do numbers like this:
+## Methods
 
-1.  The first most important thing
-2.  The second most important thing
-3.  The third most important thing
-
-See <http://rmarkdown.rstudio.com/> for all the amazing things you can do.
-
-Here's my first code chunk.
-
-```{r}
-x=3+4
-```
-
-Refer to output in your narrative like this: x=`r x` .
-
-Load any required packages in a code chunk (you may need to install some packages):
-
+### Install and load necessary packages
+This study needs packages related to image processing, such as: `terra`, `sf`, and `googledrive`; moreover, packages related to result presentation are required, including `ggplot2`, `leaflet`, `dplyr`, and `RColorBrewer`.
 ```{r, message=F, warning=F}
-library(tidyverse)
+library(terra)
+library(ggplot2)
+library(sf)
 library(leaflet)
-library(kableExtra)
-library(htmlwidgets)
-library(widgetframe)
-knitr::opts_chunk$set(widgetframe_widgets_dir = 'widgets' ) 
-knitr::opts_chunk$set(cache=TRUE)  # cache the results for quick compiling
+library(RColorBrewer)
+library(googledrive)
+library(dplyr)
 ```
 
-## Download and clean all required data
+### Prepare three mangrove species samples
+The distribution of three mangrove species samples in our study area is as shown in the following:
+```{r, echo=F, message=F, warning=F, results='hide'}
+#read shapefiles of three mangrove species in Florida
+black_mangrove <- st_read("data/SpeciesSamples/BM_Samples.shp")
+white_mangrove <- st_read("data/SpeciesSamples/WM_Samples.shp")
+red_mangrove <- st_read("data/SpeciesSamples/RM_Samples.shp")
+
+mangrove_points <- rbind(
+  mutate(red_mangrove, species = "Red"),
+  mutate(black_mangrove, species = "Black"),
+  mutate(white_mangrove, species = "White")
+)
+
+crs_target <- st_crs(4326) # WGS 84
+black_mangrove <- st_transform(black_mangrove, crs_target)
+white_mangrove <- st_transform(white_mangrove, crs_target)
+red_mangrove <- st_transform(red_mangrove, crs_target)
+```
 
 ```{r}
-n=20
-data=data.frame(x=runif(n,-180,180),
-                y=runif(n,-60,60),
-                size = runif(n, 5, 20),
-                category = factor(
-                  sample(letters[1:5], n, replace = TRUE)
-                  ),
-                value = rnorm(n))
+# Leaflet is used to present the goegraphical locations of three mangrove species.
+colors <- c("Black Mangrove" = "black", 
+            "White Mangrove" = "white", 
+            "Red Mangrove" = "red")
+
+leaflet() %>%
+  addTiles() %>% 
+  addCircleMarkers(data = black_mangrove, 
+                   color = "black", 
+                   radius = 5, 
+                   popup = ~paste("Black Mangrove<br>", as.character(geometry))) %>%
+  addCircleMarkers(data = white_mangrove, 
+                   color = "white", 
+                   radius = 5, 
+                   popup = ~paste("White Mangrove<br>", as.character(geometry))) %>%
+  addCircleMarkers(data = red_mangrove, 
+                   color = "red", 
+                   radius = 5, 
+                   popup = ~paste("Red Mangrove<br>", as.character(geometry))) %>%
+  addLegend("bottomright", 
+            colors = colors, 
+            labels = names(colors), 
+            title = "Mangrove Samples")
 ```
 
-```{r, results='asis'}
-data %>% 
-  slice(1:10) %>% #show only 1:n rows
-  kable(digits=2,align="c")%>% #make table and round to two digits
-  kable_styling(bootstrap_options = 
-                  c("striped", "hover", "condensed", "responsive")) #apply other formatting
+<br>The downloaded HLS images are uploaded to Google Drive, we can access this data folder through ID. Then, we will collect band 4 and band5 from the dataset. Partial code is presented as following:
+```{r, eval=F}
+# drive_auth() for first time to link Google Drive from R, we should do this authentication
+HLSImages_Folder_ID <- "MYGOOGLEFOLDERIDHERE"
+HLS_Everglades <- drive_ls(as_id(HLSImages_Folder_ID))
+HLS_band4 <- HLS_Everglades %>% filter(grepl("_B04_", name))
+HLS_band5 <- HLS_Everglades %>% filter(grepl("_B05_", name))
+
+# extract DOY from HLS_band4$name
+extract_doy <- function(names_column) {
+  doy_values <- gsub(".*_doy(\\d{7}).*", "\\1", names_column)
+  return(as.numeric(doy_values)) # convert it to numeric
+}
+
+# Add it to DOY column in HLS_band4 and HLS_band5
+HLS_band4$DOY <- extract_doy(HLS_band4$name)
+HLS_band5$DOY <- extract_doy(HLS_band5$name)
+
+# Initial the results file (extracted band 4 and band 5 values) as a list
+HLS_band4$download_link <- sapply(HLS_band4$drive_resource, function(x) x$webContentLink)
+HLS_band5$download_link <- sapply(HLS_band5$drive_resource, function(x) x$webContentLink)
+
+band4_rasters <- lapply(HLS_band4$download_link, function(link) rast(link))
+band5_rasters <- lapply(HLS_band5$download_link, function(link) rast(link))
+
+```
+```{r, echo=F, message=F, warning=F, results='hide', eval=F}
+# Function to extract the 'id' part from a given string (raster name or download link)
+extract_id <- function(name) {
+  # Use regular expressions to extract the 'id' parameter value
+  sub(".*[?&]id=([a-zA-Z0-9_-]+).*", "\\1", name)
+}
+
+# Step 1: Create a mapping of 'id' -> DOY from HLS_band5
+HLS_band5$id <- sapply(HLS_band5$download_link, extract_id)
+link_to_doy <- setNames(HLS_band5$DOY, HLS_band5$id) # Create mapping: id -> DOY
+
+# Step 2: Check CRS of the sample points and rasters
+print("Checking coordinate systems...")
+sample_crs <- st_crs(black_mangrove) # CRS of black mangrove points
+raster_crs <- crs(band5_rasters[[1]]) # CRS of the first raster (assumed consistent across rasters)
+print(paste("Sample CRS:", sample_crs$input))
+print(paste("Raster CRS:", raster_crs))
+
+# If CRS is different, reproject the sample points to match the raster CRS
+if (sample_crs$input != raster_crs) {
+  print("CRS mismatch detected. Reprojecting sample points to match raster CRS...")
+  black_mangrove <- st_transform(black_mangrove, raster_crs)
+  print("Reprojection completed.")
+}
+
+# Initialize results table with DOY and placeholders
+extracted_band5_RM <- data.frame(DOY = HLS_band5$DOY)
+for (j in seq_len(nrow(red_mangrove))) {
+  extracted_band5_RM[, paste0("Red_", j)] <- NA
+}
+
+# Iterate through rasters
+for (i in seq_along(band5_rasters)) {
+  raster_name <- names(band5_rasters[[i]])
+  raster_id <- extract_id(raster_name)
+  doy <- link_to_doy[raster_id]
+  
+  if (is.na(doy)) {
+    stop(paste("Raster ID", raster_id, "could not be matched with any DOY."))
+  }
+
+  band5_extract <- terra::extract(band5_rasters[[i]], red_mangrove, method = "simple")
+  
+  if (nrow(band5_extract) != nrow(red_mangrove)) {
+    stop("Mismatch between extracted values and number of sample points.")
+  }
+  
+  row_index <- which(extracted_band5_RM$DOY == doy)
+  if (length(row_index) == 0) {
+    stop(paste("DOY", doy, "not found in results table."))
+  }
+  
+  # Add extracted values to the correct row
+  extracted_band5_RM[row_index, paste0("Red_", seq_len(nrow(red_mangrove)))] <- t(as.matrix(band5_extract[, 2]))
+  print(paste("Added values for DOY", doy, ":", band5_extract[, 2]))
+}
+
+# Save the results
+write.csv(extracted_band5_BM, "data/extracted_band5_BM.csv", row.names = FALSE)
+```
+### Extract phenology from time-series HLS
+-  NDVI values were retrieved for mangrove species sampling points. The extracted data were organized into a tabular format, with rows representing dates and columns representing NDVI values for each sample point.
+
+-  Harmonic regression was employed to model the seasonal patterns in NDVI data. The fitted harmonic regression curves were plotted alongside the observed NDVI data points to visualize seasonal trends.
+
+```{r, echo=F, message=F, warning=F, results='hide', eval=F}
+# Function to compute NDVI from Band 4 and Band 5 datasets
+compute_ndvi <- function(band4_file, band5_file, output_file) {
+  # Step 1: Read Band 4 and Band 5 CSV files
+  cat("Reading Band 4 data from:", band4_file, "\n")
+  band4_data <- read.csv(band4_file)
+  cat("Reading Band 5 data from:", band5_file, "\n")
+  band5_data <- read.csv(band5_file)
+  
+  # Step 2: Preprocess DOY columns
+  cat("Preprocessing DOY columns...\n")
+  band4_data$DOY <- as.numeric(trimws(band4_data$DOY))
+  band5_data$DOY <- as.numeric(trimws(band5_data$DOY))
+  
+  # Remove duplicates if present
+  if (any(duplicated(band4_data$DOY))) {
+    cat("Removing duplicate DOY values in Band 4...\n")
+    band4_data <- band4_data[!duplicated(band4_data$DOY), ]
+  }
+  if (any(duplicated(band5_data$DOY))) {
+    cat("Removing duplicate DOY values in Band 5...\n")
+    band5_data <- band5_data[!duplicated(band5_data$DOY), ]
+  }
+  
+  # Step 3: Identify common DOY
+  cat("Identifying common DOY values...\n")
+  common_doy <- intersect(band4_data$DOY, band5_data$DOY)
+  if (length(common_doy) == 0) {
+    stop("No matching DOY values found between Band 4 and Band 5 datasets.")
+  }
+  cat("Number of matching DOY values:", length(common_doy), "\n")
+  
+  # Filter data to retain only matching DOY
+  band4_data <- band4_data[band4_data$DOY %in% common_doy, ]
+  band5_data <- band5_data[band5_data$DOY %in% common_doy, ]
+  
+  # Sort datasets by DOY
+  band4_data <- band4_data[order(band4_data$DOY), ]
+  band5_data <- band5_data[order(band5_data$DOY), ]
+  
+  # Step 4: Check alignment of DOY columns
+  cat("Checking DOY alignment...\n")
+  if (!all(band4_data$DOY == band5_data$DOY)) {
+    mismatches <- which(band4_data$DOY != band5_data$DOY)
+    cat("Mismatched DOY rows detected:\n")
+    print(band4_data$DOY[mismatches])
+    print(band5_data$DOY[mismatches])
+    stop("DOY columns still not aligned after sorting.")
+  }
+  cat("DOY columns are aligned.\n")
+  
+  # Step 5: Initialize NDVI results
+  cat("Initializing NDVI results...\n")
+  ndvi_results <- data.frame(DOY = band4_data$DOY)
+  
+  # Step 6: Compute NDVI for each sample point
+  cat("Computing NDVI for sample points...\n")
+  for (col in 2:ncol(band4_data)) {  # Skip the DOY column
+    band4_col <- band4_data[, col]
+    band5_col <- band5_data[, col]
+    
+    # Calculate NDVI
+    ndvi_results[, col] <- (band5_col - band4_col) / (band5_col + band4_col)
+  }
+  
+  # Step 7: Add column names to NDVI results
+  colnames(ndvi_results) <- colnames(band4_data)
+  
+  # Step 8: Save NDVI results to CSV
+  cat("Saving NDVI results to:", output_file, "\n")
+  write.csv(ndvi_results, output_file, row.names = FALSE)
+  cat("NDVI computation completed successfully.\n")
+}
+
+compute_ndvi("data/extracted_band4_BM.csv", "data/extracted_band5_BM.csv", "data/ndvi_BM.csv")
+compute_ndvi("data/extracted_band4_RM.csv", "data/extracted_band5_RM.csv", "data/ndvi_RM.csv")
+compute_ndvi("data/extracted_band4_WM.csv", "data/extracted_band5_WM.csv", "data/ndvi_WM.csv")
 ```
 
-Add any additional processing steps here.
+```{r, echo=F, message=F, warning=F, results='hide'}
+# Step 1: Read NDVI data for the three species
+BM_ndvi <- read.csv("data/ndvi_BM.csv")
+WM_ndvi <- read.csv("data/ndvi_WM.csv")
+RM_ndvi <- read.csv("data/ndvi_RM.csv")
+
+# Step 2: Calculate average NDVI for each species
+Avg_BM_ndvi <- rowMeans(BM_ndvi[, -1], na.rm = TRUE)  # Exclude DOY column
+Avg_WM_ndvi <- rowMeans(WM_ndvi[, -1], na.rm = TRUE)
+Avg_RM_ndvi <- rowMeans(RM_ndvi[, -1], na.rm = TRUE)
+
+# Step 3: Combine data into a single dataframe for plotting
+avg_ndvi_data <- data.frame(
+  Species = rep(c("Black Mangrove", "White Mangrove", "Red Mangrove"), 
+                times = c(length(Avg_BM_ndvi), length(Avg_WM_ndvi), length(Avg_RM_ndvi))),
+  Average_NDVI = c(Avg_BM_ndvi, Avg_WM_ndvi, Avg_RM_ndvi)
+)
+
+# Step 4: Filter data to only include NDVI values between 0 and 1
+avg_ndvi_data <- avg_ndvi_data %>%
+  filter(Average_NDVI > 0 & Average_NDVI < 1)
+
+# Step 5: Calculate group sizes for variable box widths
+species_counts <- avg_ndvi_data %>%
+  group_by(Species) %>%
+  summarise(Count = n())
+
+# Step 6: Merge counts back into the main dataframe
+avg_ndvi_data <- avg_ndvi_data %>%
+  left_join(species_counts, by = "Species")
+
+```
+
+```{r, echo=F, message=F, warning=F, results='hide'}
+# Function to preprocess DOY to extract the day of year
+preprocess_doy <- function(doy_column) {
+  as.numeric(substr(doy_column, 5, 7))  # Extract last three digits
+}
+
+# Function to remove outliers based on 3x standard deviation
+remove_outliers <- function(data) {
+  mean_ndvi <- mean(data$Average_NDVI, na.rm = TRUE)
+  std_ndvi <- sd(data$Average_NDVI, na.rm = TRUE)
+  threshold_low <- mean_ndvi - 3 * std_ndvi
+  threshold_high <- mean_ndvi + 3 * std_ndvi
+  data %>%
+    filter(Average_NDVI >= threshold_low & Average_NDVI <= threshold_high)
+}
+
+# Function to fit harmonic regression and predict NDVI
+fit_harmonic_regression <- function(data, species_name) {
+  # Preprocess DOY and remove outliers
+  data <- data %>%
+    mutate(DOY = preprocess_doy(DOY)) %>%  # Preprocess DOY to extract day of year
+    filter(Average_NDVI > 0 & Average_NDVI < 1) %>%  # Filter valid NDVI values
+    remove_outliers()  # Remove outliers based on 3x std
+  
+  # Fit harmonic regression
+  model <- lm(Average_NDVI ~ cos(2 * pi * DOY / 365) + sin(2 * pi * DOY / 365), data = data)
+  
+  # Generate DOY sequence for predictions
+  doy_seq <- seq(1, 365, by = 1)
+  predictions <- predict(model, newdata = data.frame(
+    DOY = doy_seq
+  ))
+  
+  # Return observed data, fitted model, and predictions
+  list(
+    data = data,
+    model = model,
+    predictions = data.frame(DOY = doy_seq, Fitted_NDVI = predictions),
+    species = species_name
+  )
+}
+```
+
+
+```{r, echo=F, message=F, warning=F, results='hide'}
+# Step 1: Load NDVI data for three species
+species1_ndvi <- read.csv("data/ndvi_BM.csv")
+species2_ndvi <- read.csv("data/ndvi_WM.csv")
+species3_ndvi <- read.csv("data/ndvi_RM.csv")
+
+# Step 2: Calculate average NDVI for each species
+species1_data <- data.frame(DOY = species1_ndvi$DOY, Average_NDVI = rowMeans(species1_ndvi[, -1], na.rm = TRUE))
+species2_data <- data.frame(DOY = species2_ndvi$DOY, Average_NDVI = rowMeans(species2_ndvi[, -1], na.rm = TRUE))
+species3_data <- data.frame(DOY = species3_ndvi$DOY, Average_NDVI = rowMeans(species3_ndvi[, -1], na.rm = TRUE))
+
+# Step 3: Fit harmonic regression for each species
+species1_fit <- fit_harmonic_regression(species1_data, "Black Mangrove")
+species2_fit <- fit_harmonic_regression(species2_data, "White Mangrove")
+species3_fit <- fit_harmonic_regression(species3_data, "Red Mangrove")
+
+# Step 4: Combine predictions for visualization
+all_predictions <- bind_rows(
+  species1_fit$predictions %>% mutate(Species = "Black Mangrove"),
+  species2_fit$predictions %>% mutate(Species = "White Mangrove"),
+  species3_fit$predictions %>% mutate(Species = "Red Mangrove")
+)
+```
 
 # Results
 
-\[\~200 words\]
+## Average NDVI
 
-Tables and figures (maps and other graphics) are carefully planned to convey the results of your analysis. Intense exploration and evidence of many trials and failures. The author looked at the data in many different ways before coming to the final presentation of the data.
+The NDVI value ranges are shown in the following graph.Among three mangrove species, red mangrove present the lowest average NDVI through the year 2023 (0.61), while white mangrove presents the highest average NDVI (0.65).Moreover, black mangrove presents highest peak NDVI through the year compared to other two mangrove species.
+```{r, echo=FALSE, warning=FALSE}
+ggplot(avg_ndvi_data, aes(x = Species, y = Average_NDVI, fill = Species)) +
+  geom_violin(trim = TRUE, scale = "width") +  # Create violin plot
+  geom_boxplot(width = 0.1, outlier.size = 1, alpha = 0.5) +  # Add a boxplot inside the violin
+  scale_fill_manual(values = c("Black Mangrove" = "black", "White Mangrove" = "gray", "Red Mangrove" = "red")) +  # Custom colors
+  coord_cartesian(ylim = c(0, 1)) +  # Limit Y-axis to (0, 1)
+  # Mark the mean value
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 3, color = "blue", aes(group = Species), show.legend = FALSE) +
+  stat_summary(fun = mean, geom = "text", aes(label = paste0("Mean: ", round(..y.., 2))), 
+               position = position_nudge(y = 0.05), size = 3, color = "blue") +  # Adjust mean label position
+  # Mark the median value
+  stat_summary(fun = median, geom = "point", shape = 18, size = 3, color = "green", aes(group = Species), show.legend = FALSE) +
+  stat_summary(fun = median, geom = "text", aes(label = paste0("Median: ", round(..y.., 2))), 
+               position = position_nudge(y = -0.05), size = 3, color = "green") +  # Adjust median label position
+  labs(title = "Yearly Average NDVI for Three Species",
+       x = "Species",
+       y = "Average NDVI") +
+  theme_minimal() +
+  theme(
+    legend.position = "none",  # Remove legend
+    plot.title = element_text(hjust = 0.5)  # Center-align title
+  )
 
-Show tables, plots, etc. and describe them.
-
-```{r, fig.width=6, fig.height=3, fig.cap="Map of completely random data"}
-m <- leaflet(data) %>% 
-  addTiles() %>% 
-  addCircleMarkers(~x, ~y, radius = ~size,color = ~as.factor(category)) %>% 
-  addPopups(~x[2], ~y[2], "Random popup")
-m  # a map with the default OSM tile layer
 ```
 
-```{r}
-data %>% 
-  ggplot(aes(x=x,y=y,col=category))+
-  geom_point()
+## Pheonogy demostration based on harmonic regression
+
+We used harmonic regression to generate descriptive phenological curves as following. We observed that many points fall outside the normal range of mangrove NDVI values. These outliers may be caused by cloud cover or water inundation.By observing the current results, the onset time of Red Mangrove appears to be earlier compared to the other two mangrove species.
+
+```{r, warning=FALSE, echo=FALSE}
+ggplot() +
+  geom_point(data = species1_fit$data, aes(x = DOY, y = Average_NDVI, color = "Black Mangrove"), alpha = 0.6) +
+  geom_point(data = species2_fit$data, aes(x = DOY, y = Average_NDVI, color = "White Mangrove"), alpha = 0.6) +
+  geom_point(data = species3_fit$data, aes(x = DOY, y = Average_NDVI, color = "Red Mangrove"), alpha = 0.6) +
+  geom_line(data = all_predictions, aes(x = DOY, y = Fitted_NDVI, color = Species), size = 1) +
+  scale_color_manual(values = c(
+    "Black Mangrove" = "black",
+    "White Mangrove" = "gray",
+    "Red Mangrove" = "red"
+  )) +
+  labs(
+    title = "Harmonic Regression of NDVI Phenology",
+    x = "Day of Year (DOY)",
+    y = "NDVI",
+    color = "Species"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5))
 ```
+# Conclusion
 
-### Dygraphs Example
-
-```{r}
-library(dygraphs)
-dygraph(nhtemp, main = "New Haven Temperatures") |> 
-  dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01")) 
-```
-
-# Conclusions
-
-\[\~200 words\]
-
-Clear summary adequately describing the results and putting them in context. Discussion of further questions and ways to continue investigation.
+This study utilized time-series HLS data on 2023 to analyze the phenology of three mangrove species in Everglades, Florida. To be more specific, I applied harmonic regression to generate phenology based on time-series NDVI. From the resluts, we can see that different mangrove species present different average greenness (average NDVI) and pheonogy through the year. Moreover, to refine this study, we can filter the image pixels influenced by clouds and tides. 
+In conclusion, this study help in understanding the dynamics within one mangrove ecosystem, aiding conservation efforts and the management of coastal ecosystems in the face of climate change.
 
 # References
-
-All sources are cited in a consistent manner
